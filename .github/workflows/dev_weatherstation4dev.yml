@@ -30,7 +30,7 @@ jobs:
 
       - name: 'Restore dependencies'
         shell: pwsh
-        run: 
+        run: | 
           pushd ./weatherstation
           dotnet restore
           popd
