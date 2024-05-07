@@ -28,6 +28,13 @@ jobs:
         with:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
+      - name: Restore dependencies
+        working-directory: pwsh
+        run: 
+          pushd ./weatherstation
+          dotnet restore
+          popd
+          
       - name: 'Resolve Project Dependencies Using Dotnet'
         shell: pwsh
         run: |
@@ -37,12 +44,7 @@ jobs:
           dotnet build --configuration Debug --property:OutputPath=../bin/Debug     
           # Return to the previous directory
           popd
-      - name: Restore dependencies
-        working-directory: pwsh
-        run: 
-          pushd ./weatherstation
-          dotnet restore
-          popd
+
       - name: Login to Azure
         uses: azure/login@v1
         with:
