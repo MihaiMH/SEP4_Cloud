@@ -31,9 +31,13 @@ jobs:
       - name: 'Resolve Project Dependencies Using Dotnet'
         shell: pwsh
         run: |
-          pushd './${{ env.AZURE_FUNCTIONAPP_PACKAGE_PATH }}'
-          dotnet build --configuration Debug --property:OutputPath=./bin/Debug
+          # Navigate to the directory containing the project file
+          pushd ./weatherstation
+          # Build the project with the desired configuration and output path
+          dotnet build --configuration Debug --property:OutputPath=../bin/Debug     
+          # Return to the previous directory
           popd
+
       
       - name: Login to Azure
         uses: azure/login@v1
