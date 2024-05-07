@@ -51,6 +51,7 @@ jobs:
           client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_6F868CA194A9479485686045B5996802 }}
           tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_9739A07A020743B589179D7762DE1CD4 }}
           subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_266163A966FB4257AA78E791EC3D7F6D }}
+          allow-no-subscriptions: true
 
       - name: 'Run Azure Functions Action'
         uses: Azure/functions-action@v1
