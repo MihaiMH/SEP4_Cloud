@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34728.123
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "weatherstation", "weatherstation.csproj", "{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EfcDataAccess", "EfcDataAccess\EfcDataAccess.csproj", "{2374613D-B9AF-4945-A126-9954D42E4390}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Domain", "Domain\Domain.csproj", "{B920C139-7EEA-4A70-B644-F54A91C3782F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IoTCommunication", "IoTCommunication\IoTCommunication.csproj", "{773415A9-B2AC-4D06-8A72-803DB661DF47}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2374613D-B9AF-4945-A126-9954D42E4390}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2374613D-B9AF-4945-A126-9954D42E4390}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2374613D-B9AF-4945-A126-9954D42E4390}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2374613D-B9AF-4945-A126-9954D42E4390}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B920C139-7EEA-4A70-B644-F54A91C3782F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B920C139-7EEA-4A70-B644-F54A91C3782F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B920C139-7EEA-4A70-B644-F54A91C3782F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B920C139-7EEA-4A70-B644-F54A91C3782F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{773415A9-B2AC-4D06-8A72-803DB661DF47}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{773415A9-B2AC-4D06-8A72-803DB661DF47}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{773415A9-B2AC-4D06-8A72-803DB661DF47}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{773415A9-B2AC-4D06-8A72-803DB661DF47}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {CB12A72C-0497-413B-A299-0BB629F18895}
+	EndGlobalSection
+EndGlobal
