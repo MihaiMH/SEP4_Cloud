@@ -1,9 +1,6 @@
 ﻿using System;
 
-public class IWeatherLogic
+public interface IWeatherLogic
 {
-	public IWeatherLogic()
-	{
-		public Task<IEnumerable<WeatherData>> GetAsync(SearchParameters searchParameters);
-	}
+		public Task<IEnumerable<WeatherData>> GetAsync();
 }
