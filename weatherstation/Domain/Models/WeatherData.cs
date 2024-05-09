@@ -2,6 +2,7 @@ using System;
 
 public class WeatherData
 {
+	public int Id { get; set; }
 	public string WeatherState { get; set; }
 	public double Temperature { get; set; }
 	public string Light { get; set; }
