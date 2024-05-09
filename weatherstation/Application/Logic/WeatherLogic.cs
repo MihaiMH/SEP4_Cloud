@@ -3,12 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using weatherstation.Application.DaoInterfaces;
 using weatherstation.Domain.DTOs;
 
 namespace weatherstation.Logic
 {
-    internal static class WeatherLogic
+    internal class WeatherLogic
     {
+        private readonly IWeatherDao weatherDao;
+
+        public WeatherLogic(IWeatherDao weatherDao)
+        {
+            this.weatherDao = weatherDao;
+        }
+
         public static CurrentWeatherDto GetCurrentWeather()
         {
             // LOGICA IN CARE SE IA DIN BAZA DE DATE
@@ -23,6 +31,10 @@ namespace weatherstation.Logic
             };
 
             return currentWeather;
+        }
+
+        public Task<IEnumerable<WeatherData>> GetWeatherAsync() { 
+            return weatherDao.GetAsync();
         }
     }
 }

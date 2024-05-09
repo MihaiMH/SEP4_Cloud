@@ -2,11 +2,10 @@
 
 public class SearchParameters
 {
-    public SearchParameters()
-	{
-		public DateTime DateTime {  get; set; }
+    public DateTime? DateTime { get; set; }
+	public SearchParameters(){ }
 
-	public SearchParameters(DateTime? dateTime) {  this.DateTime = dateTime; }
+	public SearchParameters(DateTime? dateTime) { DateTime = dateTime; }
 
-	}
+	
 }
