@@ -2,7 +2,7 @@ using System;
 
 public class Notification
 {
-    public User user { get; set; }
+    public User User { get; set; }
     public string Message { get; set; }
     public DateTime TimeToSend { get; set; }
 

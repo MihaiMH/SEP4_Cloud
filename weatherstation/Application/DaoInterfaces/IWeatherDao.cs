@@ -1,11 +1,13 @@
 ﻿using System;
-using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
-public class IWeatherDao
+namespace weatherstation.Application.DaoInterfaces
 {
-	public IWeatherDao()
-	{
-		public Task<IEnumerable<WeatherData>> GetAsync(SearchParameters searchParameters);
-	}
+    public interface IWeatherDao
+    {
+        public Task<IEnumerable<WeatherData>> GetAsync();
+    }
 }
