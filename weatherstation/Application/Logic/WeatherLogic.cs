@@ -25,18 +25,18 @@ namespace weatherstation.Logic
 
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-            List<CurrentWeatherDto> results = db.ExecuteQuery(
+            List <CurrentWeatherDto> results = db.ExecuteQuery(
                 query,
                 reader => new CurrentWeatherDto
                 {
-                    Id = reader.GetInt32("id"),
-                    WeatherState = reader.GetString("weatherState"),
-                    Temperature = reader.GetDouble("temperature"),
-                    Light = reader.GetString("light"),
-                    Humidity = reader.GetDouble("humidity"),
-                    Time = reader.GetDateTime("Time")
+                    Id = reader.GetInt32("Id"),
+                    WeatherState = reader.GetString("WeatherState"),
+                    Temperature = reader.GetDouble("Temperature"),
+                    Light = reader.GetString("Light"),
+                    Humidity = reader.GetDouble("Humidity"),
+                    Time = reader.GetDateTime("DateTime")
                 });
-
+            
             return results;
 
         }
