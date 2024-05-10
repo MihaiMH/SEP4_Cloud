@@ -402,3 +402,10 @@ FodyWeavers.xsd
 
 # Visual Studio files
 .vs/
+
+
+# Ignore environment settings file
+.env
+
+# Exclude local settings file
+local.settings.json
