@@ -8,22 +8,22 @@ namespace weatherstation.Domain.DTOs
 {
     public class CurrentWeatherDto
     {
-        public string Location { get; set; }
-        public double CurrentTemp { get; set; }
+        public int Id { get; set; }
         public string WeatherState { get; set; }
-        public DateTime TimeChecked { get; set; }
+        public double Temperature { get; set; }
+        public string Light { get; set; }
         public double Humidity { get; set; }
+        public DateTime Time { get; set; }
 
         public CurrentWeatherDto() { }
 
-        public CurrentWeatherDto(string location, double currentTemp, string weatherState, DateTime timeChecked,
-            double humidity)
+        public CurrentWeatherDto(string weatherState, double temperature, string light, double humidity, DateTime dateTime)
         {
-            Location = location;
-            CurrentTemp = currentTemp;
             WeatherState = weatherState;
-            TimeChecked = timeChecked;
+            Temperature = temperature;
+            Light = light;
             Humidity = humidity;
+            Time = dateTime;
         }
     }
 }
