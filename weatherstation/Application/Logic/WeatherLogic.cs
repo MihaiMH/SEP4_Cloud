@@ -8,7 +8,7 @@ using weatherstation.Domain.DTOs;
 
 namespace weatherstation.Logic
 {
-    internal class WeatherLogic
+    internal class WeatherLogic : IWeatherLogic
     {
         private readonly IWeatherDao weatherDao;
 
@@ -33,7 +33,8 @@ namespace weatherstation.Logic
             return currentWeather;
         }
 
-        public Task<IEnumerable<WeatherData>> GetWeatherAsync() { 
+        public Task<IEnumerable<WeatherData>> GetAsync()
+        {
             return weatherDao.GetAsync();
         }
     }
