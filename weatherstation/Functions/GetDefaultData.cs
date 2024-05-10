@@ -21,7 +21,7 @@ namespace weatherstation.Functions
         public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
 
-            CurrentWeatherDto dto = WeatherLogic.GetCurrentWeather();
+            List<CurrentWeatherDto> dto = WeatherLogic.GetCurrentWeather();
 
             return new OkObjectResult(dto);
         }

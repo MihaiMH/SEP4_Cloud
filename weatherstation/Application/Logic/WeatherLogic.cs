@@ -1,10 +1,12 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using weatherstation.Application.DaoInterfaces;
 using weatherstation.Domain.DTOs;
+using weatherstation.Utils;
 
 namespace weatherstation.Logic
 {
@@ -17,20 +19,26 @@ namespace weatherstation.Logic
             this.weatherDao = weatherDao;
         }
 
-        public static CurrentWeatherDto GetCurrentWeather()
+        public static List<CurrentWeatherDto> GetCurrentWeather()
         {
-            // LOGICA IN CARE SE IA DIN BAZA DE DATE
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            CurrentWeatherDto currentWeather = new CurrentWeatherDto()
-            {
-                Location = "Horsens",
-                CurrentTemp = 25.3,
-                WeatherState = "Sunny",
-                TimeChecked = DateTime.Now,
-                Humidity = 5.3
-            };
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-            return currentWeather;
+            List<CurrentWeatherDto> results = db.ExecuteQuery(
+                query,
+                reader => new CurrentWeatherDto
+                {
+                    Id = reader.GetInt32("id"),
+                    WeatherState = reader.GetString("weatherState"),
+                    Temperature = reader.GetDouble("temperature"),
+                    Light = reader.GetString("light"),
+                    Humidity = reader.GetDouble("humidity"),
+                    Time = reader.GetDateTime("Time")
+                });
+
+            return results;
+
         }
 
         public Task<IEnumerable<WeatherData>> GetWeatherAsync() { 
