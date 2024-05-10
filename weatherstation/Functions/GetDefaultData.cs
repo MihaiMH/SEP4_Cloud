@@ -2,9 +2,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using weatherstation.Domain.DTOs;
 using weatherstation.Logic;
+
 
 namespace weatherstation.Functions
 {
