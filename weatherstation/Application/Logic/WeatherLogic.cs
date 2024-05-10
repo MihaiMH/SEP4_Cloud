@@ -21,9 +21,9 @@ namespace weatherstation.Logic
 
         public static List<CurrentWeatherDto> GetCurrentWeather()
         {
-            DBManager db = new DBManager("Server=sql.freedb.tech;Port=3306;Database=freedb_weatherstation;Uid=freedb_cristi;Pwd=wx*kQ6Ez7gK#6Jg;");
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            string? query = "SELECT * FROM WeatherData";
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
             List <CurrentWeatherDto> results = db.ExecuteQuery(
                 query,
