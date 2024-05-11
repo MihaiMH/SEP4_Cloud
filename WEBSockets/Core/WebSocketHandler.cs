@@ -39,6 +39,7 @@ namespace WEBSockets.Core
             else
             {
                 context.Response.StatusCode = 400;
+
             }
         }
     }
