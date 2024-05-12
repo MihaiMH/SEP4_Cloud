@@ -1,11 +1,15 @@
 ﻿using System;
 
-public class SearchParameters
+namespace WEBSockets.Domain.DTOs
 {
-    public DateTime? DateTime { get; set; }
-	public SearchParameters(){ }
+    public class SearchParameters
+    {
+        public DateTime? DateTime { get; set; }
+        public SearchParameters() { }
 
-	public SearchParameters(DateTime? dateTime) { DateTime = dateTime; }
+        public SearchParameters(DateTime? dateTime) { DateTime = dateTime; }
 
-	
+
+    }
+
 }

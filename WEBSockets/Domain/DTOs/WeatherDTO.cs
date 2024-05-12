@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace weatherstation.Domain.DTOs
+namespace WEBSockets.Domain.DTOs
 {
-    internal class WeatherDTO
+    public class WeatherDTO
     {
     }
 }

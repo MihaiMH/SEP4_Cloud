@@ -1,15 +1,19 @@
 using System;
 
-public class Notification
+namespace WEBSockets.Domain.Models
 {
-    public User User { get; set; }
-    public string Message { get; set; }
-    public DateTime TimeToSend { get; set; }
-
-    public Notification(User user, string message, DateTime timeToSend)
+    public class Notification
     {
-        User = user;
-        Message = message;
-        TimeToSend = timeToSend;
+        public User User { get; set; }
+        public string Message { get; set; }
+        public DateTime TimeToSend { get; set; }
+
+        public Notification(User user, string message, DateTime timeToSend)
+        {
+            User = user;
+            Message = message;
+            TimeToSend = timeToSend;
+        }
     }
 }
+

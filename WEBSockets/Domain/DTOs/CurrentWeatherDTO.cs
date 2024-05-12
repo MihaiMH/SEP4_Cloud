@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace weatherstation.Domain.DTOs
+namespace WEBSockets.Domain.DTOs
 {
     public class CurrentWeatherDto
     {
