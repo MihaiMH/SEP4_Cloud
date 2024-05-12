@@ -1,4 +1,5 @@
 using System.Net.WebSockets;
+using weatherstation.EfcDataAccess;
 using WEBSockets.Core;
 
 
@@ -6,6 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<DatabaseContext>();
 
 var app = builder.Build();
 
@@ -28,7 +30,8 @@ app.Use(async (context, next) =>
 {
     if (context.WebSockets.IsWebSocketRequest)
     {
-        await WebSocket.Core.WebSocketHandler.HandleWebSocket(context);
+        var dbContext = context.RequestServices.GetRequiredService<DatabaseContext>();
+        await WEBSockets.Core.WebSocketHandler.HandleWebSocket(context, dbContext);
     }
     else
     {
