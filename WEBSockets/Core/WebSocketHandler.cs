@@ -1,46 +1,80 @@
-﻿using System.Net.WebSockets;
+﻿using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Net.WebSockets;
 using System.Text;
+using System.Text.Json.Serialization;
+using weatherstation.EfcDataAccess;
 
 namespace WEBSockets.Core
 {
     public class WebSocketHandler
     {
-
-        public static async Task HandleWebSocket(HttpContext context)
+        public static async Task HandleWebSocket(HttpContext context, DatabaseContext dbContext)
         {
-            if (context.WebSockets.IsWebSocketRequest)
+            using var socket = await context.WebSockets.AcceptWebSocketAsync();
+
+            Console.WriteLine(" -> A new client connected!");
+
+            string requestRoute = context.Request.Path.ToString();
+            string token = context.Request.Query["token"];
+
+            bool connectionAlive = true;
+            List<byte> webSocketPayload = new List<byte>(1024 * 4);
+            byte[] tempMessage = new byte[1024 * 4];
+
+            while (connectionAlive)
             {
-                using var socket = await context.WebSockets.AcceptWebSocketAsync();
-                var buffer = new byte[1024 * 4]; 
+                webSocketPayload.Clear();
 
-                // Ne conectam
-                while (socket.State == WebSocketState.Open)
+                WebSocketReceiveResult? webSocketResponse;
+
+                do
                 {
-                    var result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+                    webSocketResponse = await socket.ReceiveAsync(tempMessage, CancellationToken.None);
+                    webSocketPayload.AddRange(new ArraySegment<byte>(tempMessage, 0, webSocketResponse.Count));
+                }
+                while (webSocketResponse.EndOfMessage == false);
 
-                    // Facem handle la incoming messages
-                    if (result.MessageType == WebSocketMessageType.Close)
+                if (webSocketResponse.MessageType == WebSocketMessageType.Text)
+                {
+                    string message = System.Text.Encoding.UTF8.GetString(webSocketPayload.ToArray());
+                    Console.WriteLine("Client says {0}", message);
+
+                    try
                     {
-                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
+                        var jsonData = JsonConvert.DeserializeObject<JObject>(message);
+
+                        double temperature = (double)jsonData["temperature"];
+                        double humidity = (double)jsonData["humidity"];
+                        int light = (int)jsonData["light"];
+
+                        Console.WriteLine($"Temperature: {temperature}, Humidity: {humidity}, Light: {light}");
+
+                        var weatherData = new WeatherData
+                        {
+                            WeatherState = "Hz inca",
+                            Temperature = temperature,
+                            Humidity = humidity,
+                            Light = light.ToString(),
+                            DateTime = DateTime.UtcNow
+                        };
+
+                        dbContext.WeatherData.Add(weatherData);
+                        await dbContext.SaveChangesAsync();
                     }
-                    else
+                    catch (JsonException ex)
                     {
-                        // Procesam incoming data
-                        var messageBytes = new byte[result.Count];
-                        Array.Copy(buffer, messageBytes, result.Count);
-                        string message = Encoding.UTF8.GetString(messageBytes);
-                        Console.WriteLine("Received message: " + message);
-
-                        // Trimitem inapoi la ciuspani datele
-                        await socket.SendAsync(new ArraySegment<byte>(messageBytes), result.MessageType, result.EndOfMessage, CancellationToken.None);
+                        Console.WriteLine("Error parsing JSON: " + ex.Message);
                     }
                 }
+                else if (webSocketResponse.MessageType == WebSocketMessageType.Close)
+                {
+                    connectionAlive = false;
+                }
             }
-            else
-            {
-                context.Response.StatusCode = 400;
 
-            }
+            Console.WriteLine(" -> A client disconnected.");
         }
     }
 }
