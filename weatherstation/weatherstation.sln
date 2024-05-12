@@ -5,8 +5,6 @@ VisualStudioVersion = 17.9.34728.123
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "weatherstation", "weatherstation.csproj", "{2CA108A9-DB09-4F69-8FFC-85F92AC5559F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WEBSockets", "..\WEBSockets\WEBSockets.csproj", "{28B82A89-FF58-49FD-8D69-1636168618DF}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
