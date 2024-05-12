@@ -266,3 +266,5 @@ __pycache__/
 
 # Ignore environment settings file
 .env
+
+local.settings.json
