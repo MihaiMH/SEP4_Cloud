@@ -12,13 +12,9 @@ namespace weatherstation.Functions
     public class RegisterAccount
     {
         private readonly ILogger<RegisterAccount> _logger;
-        private readonly AccountLogic _accountLogic;
 
         public RegisterAccount(ILogger<RegisterAccount> logger)
-        {
-            _logger = logger;
-            _accountLogic = new AccountLogic(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-        }
+        {            _logger = logger;               }
 
         [Function("RegisterAccount")]
         public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
@@ -27,10 +23,10 @@ namespace weatherstation.Functions
             {
                 // Citim ce trimit ciuspanii din front
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
-                var user = JsonConvert.DeserializeObject<User>(requestBody);
+                dynamic data = JsonConvert.DeserializeObject<dynamic>(requestBody);
 
                 // Register the account
-                await _accountLogic.RegisterAccount(user);
+                await AccountLogic.RegisterAccount(data);
 
                 // Scrim ca tot e norm
                 _logger.LogInformation("User account registered successfully.");

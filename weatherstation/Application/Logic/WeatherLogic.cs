@@ -54,7 +54,7 @@ namespace weatherstation.Logic
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q5", EnvironmentVariableTarget.Process);
 
             List <CurrentWeatherDto> results = db.ExecuteQuery(
                 query,
@@ -68,6 +68,27 @@ namespace weatherstation.Logic
                     Time = reader.GetDateTime("DateTime")
                 });
             
+            return results;
+        }
+
+        public static List<CurrentWeatherDto> GetAllWeather()
+        {
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
+
+            List<CurrentWeatherDto> results = db.ExecuteQuery(
+                query,
+                reader => new CurrentWeatherDto
+                {
+                    Id = reader.GetInt32("Id"),
+                    WeatherState = reader.GetString("WeatherState"),
+                    Temperature = reader.GetDouble("Temperature"),
+                    Light = reader.GetString("Light"),
+                    Humidity = reader.GetDouble("Humidity"),
+                    Time = reader.GetDateTime("DateTime")
+                });
+
             return results;
         }
     }
