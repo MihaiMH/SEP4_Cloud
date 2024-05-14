@@ -27,6 +27,7 @@
     <PackageReference Include="MySql.Data" Version="8.4.0" />
     <PackageReference Include="MySQL.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -41,6 +42,7 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Application\LogicInterfaces\" />
     <Folder Include="Utils\" />
   </ItemGroup>
 </Project>
