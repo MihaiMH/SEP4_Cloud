@@ -66,7 +66,7 @@ namespace weatherstation.Functions
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return new NotFoundResult();
+                return new OkObjectResult(ex);
             }
         }
     }
