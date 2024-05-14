@@ -20,43 +20,43 @@ namespace weatherstation.Utils
             this.ConnectionString = connectionString;
         }
 
-        public List<T> ExecuteQuery<T>(string query, Func<MySqlDataReader, T> map)
+        public async Task<List<T>> ExecuteQuery<T>(string query, Func<MySqlDataReader, Task<T>> map)
         {
             List<T> results = new List<T>();
 
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    using (MySqlDataReader reader = command.ExecuteReader())
+                    using (MySqlDataReader reader = (MySqlDataReader)await command.ExecuteReaderAsync())
                     {
-                        while (reader.Read())
+                        while (await reader.ReadAsync())
                         {
-                            T dto = map(reader);
+                            T dto = await map(reader);
                             results.Add(dto);
                         }
                     }
                 }
 
-                connection.Close();
+                await connection.CloseAsync();
             }
 
             return results;
         }
-        public void InsertData(string query)
+        public async Task InsertData(string query)
         {
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
 
                 using (MySqlCommand command = new MySqlCommand(query, connection))
                 {
-                    command.ExecuteNonQuery();
+                    await command.ExecuteNonQueryAsync();
                 }
 
-                connection.Close();
+                await connection.CloseAsync();
             }
         }
     }

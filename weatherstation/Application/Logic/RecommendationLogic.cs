@@ -32,7 +32,7 @@ namespace weatherstation.Application.Logic
 
             sqlCon = sqlCon.Replace("[ID]", id);
 
-            List<CurrentWeatherDto> weather = WeatherLogic.GetCurrentWeather();
+            List<CurrentWeatherDto> weather = await WeatherLogic.GetCurrentWeather();
 
             
 
@@ -46,8 +46,8 @@ namespace weatherstation.Application.Logic
 
             if (!id.Equals("0"))
             {
-                List<Preference> preference = db.ExecuteQuery(sqlCon,
-                   reader => new Preference
+                List<Preference> preference = await db.ExecuteQuery(sqlCon,
+                   async (reader) => new Preference
                    {
                        Text = reader.GetString("Preferences")
 

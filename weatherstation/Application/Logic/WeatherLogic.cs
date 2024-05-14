@@ -19,8 +19,27 @@ namespace weatherstation.Logic
             double humidity = data["humidity"];
             int light = data["light"];
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q2", EnvironmentVariableTarget.Process);
+            string lightString = "";
+
+            if (light <= 26)
+            {
+                lightString = "Sunny";
+            }
+            else if (light > 26 && light < 60)
+            {
+                lightString = "Little Cloudy";
+            }
+            else if (light >= 60 && light <= 80)
+            {
+                lightString = "Cloudy";
+            }
+            else
+            {
+                lightString = "Night";
+            }
 
             string query = queryTemplate
+                .Replace("[VAR_WEATHERSTATE]", lightString)
                 .Replace("[VAR_TEMPERATURE]", temperature.ToString())
                 .Replace("[VAR_LIGHT]", light.ToString())
                 .Replace("[VAR_HUMIDITY]", humidity.ToString())
@@ -31,15 +50,15 @@ namespace weatherstation.Logic
             db.InsertData(query);
         }
 
-        public static List<CurrentWeatherDto> GetCurrentWeather()
+        public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q5", EnvironmentVariableTarget.Process);
 
-            List <CurrentWeatherDto> results = db.ExecuteQuery(
+            List <CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                reader => new CurrentWeatherDto
+                async (reader) => new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
@@ -52,15 +71,15 @@ namespace weatherstation.Logic
             return results;
         }
 
-        public static List<CurrentWeatherDto> GetAllWeather()
+        public static async Task<List<CurrentWeatherDto>> GetAllWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-            List<CurrentWeatherDto> results = db.ExecuteQuery(
+            List<CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                reader => new CurrentWeatherDto
+                async (reader) => new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
