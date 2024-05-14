@@ -11,8 +11,8 @@ using WEBSockets.EfcDataAccess;
 namespace WEBSockets.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    [Migration("20240514160202_Add_Column_User_Preferences")]
-    partial class Add_Column_User_Preferences
+    [Migration("20240514162628_Intial_Creation")]
+    partial class Intial_Creation
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -32,6 +32,14 @@ namespace WEBSockets.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("OnNotifications")
                         .HasColumnType("tinyint(1)");
 
@@ -40,10 +48,6 @@ namespace WEBSockets.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Preferences")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("longtext");
 

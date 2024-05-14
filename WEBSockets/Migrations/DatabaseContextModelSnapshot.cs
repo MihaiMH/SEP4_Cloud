@@ -29,6 +29,14 @@ namespace WEBSockets.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("FirstName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("LastName")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<bool>("OnNotifications")
                         .HasColumnType("tinyint(1)");
 
@@ -37,10 +45,6 @@ namespace WEBSockets.Migrations
                         .HasColumnType("longtext");
 
                     b.Property<string>("Preferences")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("Username")
                         .IsRequired()
                         .HasColumnType("longtext");
 

@@ -7,7 +7,7 @@ using MySql.EntityFrameworkCore.Metadata;
 namespace WEBSockets.Migrations
 {
     /// <inheritdoc />
-    public partial class Add_Column_User_Preferences : Migration
+    public partial class Intial_Creation : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -21,10 +21,11 @@ namespace WEBSockets.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("MySQL:ValueGenerationStrategy", MySQLValueGenerationStrategy.IdentityColumn),
-                    Username = table.Column<string>(type: "longtext", nullable: false),
+                    FirstName = table.Column<string>(type: "longtext", nullable: false),
+                    LastName = table.Column<string>(type: "longtext", nullable: false),
                     Password = table.Column<string>(type: "longtext", nullable: false),
-                    Email = table.Column<string>(type: "longtext", nullable: false),
                     Preferences = table.Column<string>(type: "longtext", nullable: false),
+                    Email = table.Column<string>(type: "longtext", nullable: false),
                     OnNotifications = table.Column<bool>(type: "tinyint(1)", nullable: false)
                 },
                 constraints: table =>
