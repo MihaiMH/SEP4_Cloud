@@ -9,6 +9,6 @@ namespace weatherstation.Application.LogicInterfaces
 {
     internal interface IAccountService
     {
-        Task RegisterAccount(User user);
+        Task RegisterAccount(dynamic data);
     }
 }

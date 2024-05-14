@@ -18,32 +18,59 @@ namespace weatherstation.Application.Logic
             this.connectionString = connectionString;
         }
 
-        public Task RegisterAccount(User user)
+        public Task RegisterAccount(dynamic data)
         {
+            string username = data["username"];
+            string password = data["password"];
+            string email = data["email"];
+            bool onNotifications = data["onNotifications"];
+
+
+            if (password.Length <= 6)
+            {
+                throw new ArgumentException("Password must be more than 6 characters.");
+            }
+
+            if (!email.EndsWith("@gmail.com", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new ArgumentException("Email must end with '@gmail.com'.");
+            }
+
+            if (!IsUsernameUnique(username))
+            {
+                throw new ArgumentException("Username is already taken.");
+            }
+
             string salt = BCrypt.Net.BCrypt.GenerateSalt();
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword("123", salt);
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
 
-            string query = $"INSERT INTO Users (Username, Password, Email, OnNotifications) " +
-                           $"VALUES ('stefanTop', '{hashedPassword}', 'johnson@gmail.com', 'true')";
 
-            try
-            {
-                DBManager db = new DBManager(connectionString);
+            string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q3", EnvironmentVariableTarget.Process);
 
-                // Execute the command to insert the user into the database
-                // Since we're executing an INSERT query, we'll use ExecuteQuery with a dummy mapper
-                // Dummy mapper returns null because we don't need to map anything when inserting
-                // We only need to know if the insertion was successful or not
-                var results = db.ExecuteQuery(query, reader => (object)null);
 
-                // If the execution was successful (no exceptions), return a completed task
-                return Task.CompletedTask;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"An error occurred during account registration: {ex.Message}");
-                throw;
-            }
+            string query = queryTemplate
+                .Replace("[VAR_USERNAME]", username)
+                .Replace("[VAR_PASSWORD]", hashedPassword)
+                .Replace("[VAR_EMAIL]", email)
+                .Replace("[VAR_ONNOTIFICATIONS]", onNotifications ? "true" : "false");
+
+
+
+            DBManager db = new DBManager(connectionString);
+            var results = db.ExecuteQuery(query, reader => (object)null);
+
+
+            return Task.CompletedTask;
+
+        }
+        private bool IsUsernameUnique(string username)
+        {
+            string query = $"SELECT COUNT(*) FROM Users WHERE Username = '{username}'";
+
+            DBManager db = new DBManager(connectionString);
+            var result = db.ExecuteQuery(query, reader => reader.GetInt32(0));
+
+            return result.FirstOrDefault() == 0;
         }
     }
 }
