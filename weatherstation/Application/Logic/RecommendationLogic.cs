@@ -55,7 +55,6 @@ namespace weatherstation.Application.Logic
                 }
             }
 
-            return pref;
             string apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
             string apiKey = Environment.GetEnvironmentVariable("AIKEY", EnvironmentVariableTarget.Process);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
