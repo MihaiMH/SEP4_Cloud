@@ -18,11 +18,11 @@ namespace weatherstation.Functions
         }
 
         [Function("GetDefaultData")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
             try
             {
-                List<CurrentWeatherDto> dto = WeatherLogic.GetCurrentWeather();
+                List<CurrentWeatherDto> dto = await WeatherLogic.GetCurrentWeather();
 
                 return new OkObjectResult(dto);
             } 

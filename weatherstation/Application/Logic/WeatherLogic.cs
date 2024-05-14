@@ -50,15 +50,15 @@ namespace weatherstation.Logic
             db.InsertData(query);
         }
 
-        public static List<CurrentWeatherDto> GetCurrentWeather()
+        public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q5", EnvironmentVariableTarget.Process);
 
-            List <CurrentWeatherDto> results = db.ExecuteQuery(
+            List <CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                reader => new CurrentWeatherDto
+                async (reader) => new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
@@ -71,15 +71,15 @@ namespace weatherstation.Logic
             return results;
         }
 
-        public static List<CurrentWeatherDto> GetAllWeather()
+        public static async Task<List<CurrentWeatherDto>> GetAllWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-            List<CurrentWeatherDto> results = db.ExecuteQuery(
+            List<CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                reader => new CurrentWeatherDto
+                async (reader) => new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),

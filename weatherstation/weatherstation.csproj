@@ -7,6 +7,11 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Application\LogicInterfaces\**" />
+    <EmbeddedResource Remove="Application\LogicInterfaces\**" />
+    <None Remove="Application\LogicInterfaces\**" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="local.settings.json" />
   </ItemGroup>
   <ItemGroup>
@@ -27,7 +32,7 @@
     <PackageReference Include="MySql.Data" Version="8.4.0" />
     <PackageReference Include="MySQL.EntityFrameworkCore" Version="8.0.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.15.1" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="7.5.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
@@ -42,7 +47,6 @@
     <Using Include="System.Threading.ExecutionContext" Alias="ExecutionContext" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Application\LogicInterfaces\" />
     <Folder Include="Utils\" />
   </ItemGroup>
 </Project>

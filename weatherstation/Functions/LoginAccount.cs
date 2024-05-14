@@ -24,17 +24,12 @@ namespace weatherstation.Functions
         [Function("LoginAccount")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
         {
-
-
             try
             {
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
                 var userData = JsonConvert.DeserializeObject<dynamic>(requestBody);
-                Console.WriteLine(userData);
                 var token = await AccountLogic.LoginAccount(userData);
 
-
-                // Return JWT token
                 return new OkObjectResult(new { token });
             }
             catch (Exception ex)

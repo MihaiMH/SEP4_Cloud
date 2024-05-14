@@ -18,18 +18,18 @@ namespace weatherstation.Application.Logic
         public AccountLogic()
         {        }
 
-        public static Task LoginAccount(dynamic data)
+        public static async Task<string> LoginAccount(dynamic data)
         {
             string email = data["email"];
             string password = data["password"];
 
             // Retrieve user from the database
-            var someUser = GetUserByEmail(email);
+            var someUser = await GetUserByEmail(email);
 
             // Check if the user exists
             if (someUser == null)
             {
-                throw new ArgumentException("Invalid email or password."); // Or provide a more specific error message
+                throw new ArgumentException("Invalid email or password.");
             }
 
             // Verify the password
@@ -42,11 +42,11 @@ namespace weatherstation.Application.Logic
             string jwtToken = GenerateJwtToken(someUser);
 
             // Return the JWT token
-            return Task.FromResult(jwtToken);
+            return jwtToken;
         }
 
 
-        public static Task RegisterAccount(dynamic data)
+        public static async Task RegisterAccount(dynamic data)
         {
             string firstname = data["firstname"];
             string lastname = data["lastname"];
@@ -66,7 +66,7 @@ namespace weatherstation.Application.Logic
                 throw new ArgumentException("Invalid email format.");
             }
 
-            if (!IsEmailUnique(email))
+            if (!await IsEmailUnique(email))
             {
                 throw new ArgumentException("Email already in use");
             }
@@ -89,77 +89,62 @@ namespace weatherstation.Application.Logic
 
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var results = db.ExecuteQuery(query, reader => (object)null);
-
-
-            return Task.CompletedTask;
-
+            await db.InsertData(query);
         }
-        private static bool IsEmailUnique(string email)
+
+        private static async Task<bool> IsEmailUnique(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q7", EnvironmentVariableTarget.Process);
-
-            string query = someQuery
-                  .Replace("{email}", email);
+            string query = someQuery.Replace("[VAR_EMAIL]", email);
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var result = db.ExecuteQuery(query, reader => reader.GetInt32(0));
+            var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
 
             return result.FirstOrDefault() == 0;
         }
-        private static User GetUserByEmail(string email)
+
+        private static async Task<User?> GetUserByEmail(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
-
-          string query = someQuery
-                .Replace("{email}", email);
+            string query = someQuery.Replace("[VAR_EMAIL]", email);
 
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var result = db.ExecuteQuery(query, reader =>
-                new User
+            var result = await db.ExecuteQuery(query, async (reader) =>
+                await Task.FromResult(new User
                 {
                     Id = reader.GetInt32("Id"),
                     FirstName = reader.GetString("FirstName"),
                     LastName = reader.GetString("LastName"),
                     Email = reader.GetString("Email"),
+                    Password = reader.GetString("Password"),
                     OnNotifications = reader.GetBoolean("OnNotifications"),
                     Preferences = reader.GetString("Preferences")
-                });
-            User newUser = new User
-            {
-                Id = result.FirstOrDefault().Id,
-                FirstName = result.FirstOrDefault().FirstName,
-                LastName = result.FirstOrDefault().LastName,
-                Email = result.FirstOrDefault().Email,
-                OnNotifications = result.FirstOrDefault().OnNotifications,
-                Preferences = result.FirstOrDefault().Preferences
-            };
+                }));
 
-
-            return newUser;
+            return result.FirstOrDefault();
         }
 
         private static string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("ladn"); // Change this to your secret key
+            var key = Encoding.ASCII.GetBytes("your_secret_key_here_123456789012345678901234567890"); // Change this to your secret key
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
                     new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Name, user.Email),
-                    new Claim(ClaimTypes.Name, user.FirstName),
-                    new Claim(ClaimTypes.Name, user.LastName),
+                    new Claim(ClaimTypes.Email, user.Email),
+                    new Claim(ClaimTypes.GivenName, user.FirstName),
+                    new Claim(ClaimTypes.Surname, user.LastName),
                 }),
                 Expires = DateTime.UtcNow.AddHours(1), // Token expires in 1 hour, change this as needed
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key),
-                                                            SecurityAlgorithms.HmacSha256Signature)
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
             };
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
         private static bool IsValidEmail(string email)
         {
 
