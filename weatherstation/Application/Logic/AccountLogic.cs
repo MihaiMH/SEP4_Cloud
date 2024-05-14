@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
+using BCrypt.Net;
+using Org.BouncyCastle.Crypto.Generators;
 using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.DTOs;
 using weatherstation.Domain.Model;
@@ -9,7 +11,7 @@ namespace weatherstation.Application.Logic
 {
     internal class AccountLogic : IAccountService
     {
-        private readonly string connectionString; 
+        private readonly string connectionString;
 
         public AccountLogic(string connectionString)
         {
@@ -18,12 +20,14 @@ namespace weatherstation.Application.Logic
 
         public Task RegisterAccount(User user)
         {
+            string salt = BCrypt.Net.BCrypt.GenerateSalt();
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword("123", salt);
+
             string query = $"INSERT INTO Users (Username, Password, Email, OnNotifications) " +
-                           $"VALUES ('Johnson', '123', 'johnson@gmail.com', 'true')";
+                           $"VALUES ('stefanTop', '{hashedPassword}', 'johnson@gmail.com', 'true')";
 
             try
             {
-              
                 DBManager db = new DBManager(connectionString);
 
                 // Execute the command to insert the user into the database
@@ -37,9 +41,8 @@ namespace weatherstation.Application.Logic
             }
             catch (Exception ex)
             {
-
                 Console.WriteLine($"An error occurred during account registration: {ex.Message}");
-                throw; 
+                throw;
             }
         }
     }
