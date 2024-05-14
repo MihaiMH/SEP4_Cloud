@@ -14,10 +14,7 @@ namespace weatherstation.Logic
     {
         private readonly IWeatherDao weatherDao;
 
-        public WeatherLogic(IWeatherDao weatherDao)
-        {
-            this.weatherDao = weatherDao;
-        }
+        
 
         public static List<CurrentWeatherDto> GetCurrentWeather()
         {
