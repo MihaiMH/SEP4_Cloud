@@ -19,8 +19,27 @@ namespace weatherstation.Logic
             double humidity = data["humidity"];
             int light = data["light"];
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q2", EnvironmentVariableTarget.Process);
+            string lightString = "";
+
+            if (light <= 26)
+            {
+                lightString = "Sunny";
+            }
+            else if (light > 26 && light < 60)
+            {
+                lightString = "Little Cloudy";
+            }
+            else if (light >= 60 && light <= 80)
+            {
+                lightString = "Cloudy";
+            }
+            else
+            {
+                lightString = "Night";
+            }
 
             string query = queryTemplate
+                .Replace("[VAR_WEATHERSTATE]", lightString)
                 .Replace("[VAR_TEMPERATURE]", temperature.ToString())
                 .Replace("[VAR_LIGHT]", light.ToString())
                 .Replace("[VAR_HUMIDITY]", humidity.ToString())
