@@ -18,10 +18,17 @@ namespace weatherstation.Application.Logic
             this.connectionString = connectionString;
         }
 
+        public Task LoginAccount(dynamic data)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task RegisterAccount(dynamic data)
         {
-            string username = data["username"];
+            string firstname = data["firstname"];
+            string lastname = data["lastname"];
             string password = data["password"];
+            string preferences = data["preferences"];
             string email = data["email"];
             bool onNotifications = data["onNotifications"];
 
@@ -36,9 +43,9 @@ namespace weatherstation.Application.Logic
                 throw new ArgumentException("Email must end with '@gmail.com'.");
             }
 
-            if (!IsUsernameUnique(username))
+            if (!IsUsernameUnique(email))
             {
-                throw new ArgumentException("Username is already taken.");
+                throw new ArgumentException("Email already in use");
             }
 
             string salt = BCrypt.Net.BCrypt.GenerateSalt();
@@ -49,8 +56,10 @@ namespace weatherstation.Application.Logic
 
 
             string query = queryTemplate
-                .Replace("[VAR_USERNAME]", username)
+                .Replace("[VAR_FIRSTNAME]", firstname)
+                .Replace("[VAR_LASTNAME]", lastname)
                 .Replace("[VAR_PASSWORD]", hashedPassword)
+                .Replace("[VAR_PREFERENCES]", preferences)
                 .Replace("[VAR_EMAIL]", email)
                 .Replace("[VAR_ONNOTIFICATIONS]", onNotifications ? "true" : "false");
 
@@ -63,9 +72,9 @@ namespace weatherstation.Application.Logic
             return Task.CompletedTask;
 
         }
-        private bool IsUsernameUnique(string username)
+        private bool IsUsernameUnique(string email)
         {
-            string query = $"SELECT COUNT(*) FROM Users WHERE Username = '{username}'";
+            string query = $"SELECT COUNT(*) FROM Users WHERE Username = '{email}'";
 
             DBManager db = new DBManager(connectionString);
             var result = db.ExecuteQuery(query, reader => reader.GetInt32(0));
