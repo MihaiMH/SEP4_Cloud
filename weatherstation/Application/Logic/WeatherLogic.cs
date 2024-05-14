@@ -13,7 +13,6 @@ namespace weatherstation.Logic
     {
         public WeatherLogic() {}
 
-<<<<<<< HEAD
         public static void InsertWeatherData(dynamic data)
         {
             double temperature = data["temperature"];
@@ -31,9 +30,6 @@ namespace weatherstation.Logic
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             db.InsertData(query);
         }
-=======
-        
->>>>>>> dev
 
         public static List<CurrentWeatherDto> GetCurrentWeather()
         {
