@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.DTOs;
+using weatherstation.Domain.Model;
 using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
