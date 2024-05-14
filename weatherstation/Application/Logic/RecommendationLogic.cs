@@ -17,20 +17,11 @@ namespace weatherstation.Application.Logic
     internal static class RecommendationLogic
     {
         private static readonly HttpClient httpClient = new HttpClient();
-        public async static Task<string> GetRecommendation(dynamic data)
+        public async static Task<string> GetRecommendation(dynamic data, Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            string id = data["isLoggedIn"];
-
-            if(id == null || id.Equals("0"))
-            {
-                id = "0";
-            }
-
-            string sqlCon = Environment.GetEnvironmentVariable("SQLCON1Q4", EnvironmentVariableTarget.Process);
-
-            sqlCon = sqlCon.Replace("[ID]", id);
+            
 
             List<CurrentWeatherDto> weather = await WeatherLogic.GetCurrentWeather();
 
@@ -44,8 +35,12 @@ namespace weatherstation.Application.Logic
 
             string pref = "No preferences";
 
-            if (!id.Equals("0"))
+            if (token!=null)
             {
+                string sqlCon = Environment.GetEnvironmentVariable("SQLCON1Q4", EnvironmentVariableTarget.Process);
+
+                sqlCon = sqlCon.Replace("[ID]", token["unique_name"]);
+
                 List<Preference> preference = await db.ExecuteQuery(sqlCon,
                    async (reader) => new Preference
                    {
@@ -59,8 +54,8 @@ namespace weatherstation.Application.Logic
                     pref = preference[0].Text;
                 }
             }
-            
-           
+
+            return pref;
             string apiUrl = Environment.GetEnvironmentVariable("apiUrl", EnvironmentVariableTarget.Process);
             string apiKey = Environment.GetEnvironmentVariable("AIKEY", EnvironmentVariableTarget.Process);
             httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {apiKey}");
