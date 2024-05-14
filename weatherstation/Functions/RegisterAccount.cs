@@ -5,6 +5,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using weatherstation.Application.Logic;
+using weatherstation.Domain.Model;
 
 namespace weatherstation.Functions
 {
