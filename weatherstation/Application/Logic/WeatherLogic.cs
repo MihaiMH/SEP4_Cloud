@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using weatherstation.Application.DaoInterfaces;
 using weatherstation.Domain.DTOs;
 using weatherstation.Utils;
 
@@ -12,11 +11,24 @@ namespace weatherstation.Logic
 {
     internal class WeatherLogic
     {
-        private readonly IWeatherDao weatherDao;
+        public WeatherLogic() {}
 
-        public WeatherLogic(IWeatherDao weatherDao)
+        public static void InsertWeatherData(dynamic data)
         {
-            this.weatherDao = weatherDao;
+            double temperature = data["temperature"];
+            double humidity = data["humidity"];
+            int light = data["light"];
+            string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q2", EnvironmentVariableTarget.Process);
+
+            string query = queryTemplate
+                .Replace("[VAR_TEMPERATURE]", temperature.ToString())
+                .Replace("[VAR_LIGHT]", light.ToString())
+                .Replace("[VAR_HUMIDITY]", humidity.ToString())
+                .Replace("[VAR_DATETIME]", "'" + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+
+            Console.WriteLine(query);
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+            db.InsertData(query);
         }
 
         public static List<CurrentWeatherDto> GetCurrentWeather()
@@ -38,11 +50,6 @@ namespace weatherstation.Logic
                 });
             
             return results;
-
-        }
-
-        public Task<IEnumerable<WeatherData>> GetWeatherAsync() { 
-            return weatherDao.GetAsync();
         }
     }
 }

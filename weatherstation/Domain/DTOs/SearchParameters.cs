@@ -6,6 +6,4 @@ public class SearchParameters
 	public SearchParameters(){ }
 
 	public SearchParameters(DateTime? dateTime) { DateTime = dateTime; }
-
-	
 }

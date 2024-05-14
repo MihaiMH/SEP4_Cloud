@@ -45,5 +45,19 @@ namespace weatherstation.Utils
 
             return results;
         }
+        public void InsertData(string query)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                using (MySqlCommand command = new MySqlCommand(query, connection))
+                {
+                    command.ExecuteNonQuery();
+                }
+
+                connection.Close();
+            }
+        }
     }
 }

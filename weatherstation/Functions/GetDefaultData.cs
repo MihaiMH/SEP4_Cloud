@@ -18,12 +18,19 @@ namespace weatherstation.Functions
         }
 
         [Function("GetDefaultData")]
-        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public IActionResult Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
         {
+            try
+            {
+                List<CurrentWeatherDto> dto = WeatherLogic.GetCurrentWeather();
 
-            List<CurrentWeatherDto> dto = WeatherLogic.GetCurrentWeather();
-
-            return new OkObjectResult(dto);
+                return new OkObjectResult(dto);
+            } 
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.Message);
+                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+            }
         }
     }
 }
