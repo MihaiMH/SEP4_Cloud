@@ -104,24 +104,21 @@ namespace weatherstation.Application.Logic
 
 
 
-        private static async Task<User?> GetUserByEmail(string email)
+        public static async Task<User?> GetUserByEmail(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
-            string query = someQuery.Replace("[VAR_EMAIL]", email); // Replace placeholder with actual email value
+            string query = someQuery.Replace("[VAR_EMAIL]", email); 
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             var result = await db.ExecuteQuery(query, async (reader) =>
             {
-                // Check if the reader has rows before attempting to read data
                 if (reader.HasRows)
                 {
-                    // Read the first row
                     await reader.ReadAsync();
 
-                    // Create a new User object
                     return new User
                     {
-                        Id = reader.GetInt32(reader.GetOrdinal("Id")), // Get column index by name
+                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
                         FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
                         LastName = reader.GetString(reader.GetOrdinal("LastName")),
                         Email = reader.GetString(reader.GetOrdinal("Email")),
@@ -132,7 +129,6 @@ namespace weatherstation.Application.Logic
                 }
                 else
                 {
-                    // No user found with the given email
                     return null;
                 }
             });
