@@ -99,7 +99,6 @@ namespace weatherstation.Application.Logic
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
-
             return result.FirstOrDefault() == 0;
         }
 
@@ -108,7 +107,7 @@ namespace weatherstation.Application.Logic
         private static async Task<User?> GetUserByEmail(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
-            string query = someQuery.Replace("{email}", email); // Replace placeholder with actual email value
+            string query = someQuery.Replace("[VAR_EMAIL]", email); // Replace placeholder with actual email value
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             var result = await db.ExecuteQuery(query, async (reader) =>
@@ -171,8 +170,11 @@ namespace weatherstation.Application.Logic
             return regex.IsMatch(email);
         }
 
-        public static async Task<string> UpdateAccount(dynamic data)
+        public static async Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token)
         {
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+            string emailFromToken = token["email"];
+
             string email = data["email"];
             string firstname = data["firstname"];
             string lastname = data["lastname"];
@@ -180,7 +182,7 @@ namespace weatherstation.Application.Logic
             string preferences = data["preferences"];
             bool onNotifications = data["onNotifications"];
 
-            var existingUser = await GetUserByEmail(email);
+            var existingUser = await GetUserByEmail(emailFromToken);
 
             if (existingUser == null)
             {
@@ -192,8 +194,28 @@ namespace weatherstation.Application.Logic
                 throw new ArgumentException("Password must be more than 6 characters.");
             }
 
-            IsValidEmail(email);
-            await IsEmailUnique(email);
+            if (!string.IsNullOrEmpty(email))
+            {
+                if (IsValidEmail(email))
+                {
+                    if (await IsEmailUnique(email))
+                    {
+                        existingUser.Email = email;
+                    }
+                    else
+                    {
+                        throw new ArgumentException("Email already in use.");
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("Invalid email format.");
+                }
+            }
+            else
+            {
+                existingUser.Email = emailFromToken;
+            }
 
             existingUser.FirstName = firstname;
             existingUser.LastName = lastname;
@@ -209,7 +231,7 @@ namespace weatherstation.Application.Logic
 
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q9", EnvironmentVariableTarget.Process);
 
-            string query = queryTemplate
+            queryTemplate = queryTemplate
                 .Replace("[VAR_USERID]", existingUser.Id.ToString())
                 .Replace("[VAR_FIRSTNAME]", existingUser.FirstName)
                 .Replace("[VAR_LASTNAME]", existingUser.LastName)
@@ -218,16 +240,11 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_EMAIL]", existingUser.Email)
                 .Replace("[VAR_ONNOTIFICATIONS]", existingUser.OnNotifications ? "true" : "false");
 
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            await db.InsertData(query);
+            await db.InsertData(queryTemplate);
 
-            // Generate new JWT token for the updated user
             string newJwtToken = GenerateJwtToken(existingUser);
 
-            // Return the new JWT token
             return newJwtToken;
         }
-
-
     }
 }

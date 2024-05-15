@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using weatherstation.Application.Logic;
 using weatherstation.Domain.Model;
+using System.Text;
 
 namespace weatherstation.Functions
 {
@@ -17,28 +18,33 @@ namespace weatherstation.Functions
         {            _logger = logger;               }
 
         [Function("RegisterAccount")]
-        public async Task<IActionResult> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
+        public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
         {
+            var res = reqData.CreateResponse();
+
             try
             {
-                // Citim ce trimit ciuspanii din front
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject<dynamic>(requestBody);
-
-                // Register the account
                 await AccountLogic.RegisterAccount(data);
 
-                // Scrim ca tot e norm
-                _logger.LogInformation("User account registered successfully.");
-
-                return new OkResult();
+                res.StatusCode = System.Net.HttpStatusCode.OK;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have successfully created an account." })));
+                return res;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error registering: {Message}", ex.Message);
+                res.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                return res;
             }
             catch (Exception ex)
             {
-                // Scrim ca nu tot norm
-                _logger.LogError(ex, "Error registering account");
-
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                _logger.LogError(ex, "An error occurred while registering.");
+                res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while registering." })));
+                return res;
             }
         }
     }
