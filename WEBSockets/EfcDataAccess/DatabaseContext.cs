@@ -7,6 +7,7 @@ namespace WEBSockets.EfcDataAccess
     {
         public DbSet<WeatherData> WeatherData { get; set; }
         public DbSet<User> Users { get; set; }
+        public DbSet<Notification> Notification { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -17,6 +18,13 @@ namespace WEBSockets.EfcDataAccess
         {
             modelBuilder.Entity<WeatherData>().HasKey(w => w.Id);
             modelBuilder.Entity<User>().HasKey(u => u.Id);
+            modelBuilder.Entity<Notification>().HasKey(n => n.Id);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.User)
+                .WithMany(u => u.Notifications)
+                .HasForeignKey(n => n.UserId)
+                .IsRequired();
         }
     }
 }

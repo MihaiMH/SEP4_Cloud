@@ -4,15 +4,17 @@ namespace WEBSockets.Domain.Models
 {
     public class Notification
     {
+        public int Id { get; set; }
+        public DateTime Time { get; set; }
+        public int UserId { get; set; }
         public User User { get; set; }
-        public string Message { get; set; }
-        public DateTime TimeToSend { get; set; }
 
-        public Notification(User user, string message, DateTime timeToSend)
+        public Notification() { }
+
+        public Notification(int userId, DateTime time)
         {
-            User = user;
-            Message = message;
-            TimeToSend = timeToSend;
+            UserId = userId;
+            Time = time;
         }
     }
 }
