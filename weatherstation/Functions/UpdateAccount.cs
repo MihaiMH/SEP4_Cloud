@@ -1,13 +1,17 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
+using Azure;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using weatherstation.Application.Logic;
+using weatherstation.Utils;
 
 namespace weatherstation.Functions
 {
@@ -21,30 +25,56 @@ namespace weatherstation.Functions
         }
 
         [Function("UpdateAccount")]
-        public async Task<IActionResult> Run(
-    [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData,
-    FunctionContext executionContext)
+        public async Task<HttpResponseData> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData,
+        FunctionContext executionContext)
         {
+            var res = reqData.CreateResponse();
+
             try
             {
+                TokenDecoder decoder = new TokenDecoder();
+                string token = decoder.Extract(reqData);
+
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
-                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
 
-                // Update the account and get the new JWT token
-                string token = await AccountLogic.UpdateAccount(data);
+                if (json == null)
+                {
+                    json = new JObject();
+                }
 
-                // Return the JWT token as response
-                return new OkObjectResult(new { token });
+                string result = "";
+                if (token == null)
+                {
+                    res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
+                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to update account." });
+                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(msg));
+                    return res;
+                }
+                else
+                {
+                    Dictionary<string, string> tokenData = decoder.Decode(token);
+                    result = await AccountLogic.UpdateAccount(json, tokenData);
+
+                    res.StatusCode = System.Net.HttpStatusCode.OK;
+                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { token = result })));
+                    return res;
+                }
             }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Error updating account: {Message}", ex.Message);
-                return new BadRequestObjectResult(ex.Message);
+                res.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                return res;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating the account.");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while updating the account." })));
+                return res;
             }
         }
 

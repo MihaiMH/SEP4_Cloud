@@ -22,20 +22,34 @@ namespace weatherstation.Functions
         }
 
         [Function("LoginAccount")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
         {
+            var res = reqData.CreateResponse();
+
             try
             {
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
                 var userData = JsonConvert.DeserializeObject<dynamic>(requestBody);
                 var token = await AccountLogic.LoginAccount(userData);
 
-                return new OkObjectResult(new { token });
+                res.StatusCode = System.Net.HttpStatusCode.OK;
+                var json = JsonConvert.SerializeObject(new { token = token });
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                return res;
+            }
+            catch (ArgumentException ex)
+            {
+                _logger.LogError(ex, "Error logging in: {Message}", ex.Message);
+                res.StatusCode = System.Net.HttpStatusCode.BadRequest;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                return res;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error logging in");
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                _logger.LogError(ex, "An error occurred while logging in.");
+                res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while logging in." })));
+                return res;
             }
         }
     }
