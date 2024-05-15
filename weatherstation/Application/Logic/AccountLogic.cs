@@ -99,7 +99,6 @@ namespace weatherstation.Application.Logic
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
-
             return result.FirstOrDefault() == 0;
         }
 

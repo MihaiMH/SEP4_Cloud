@@ -13,7 +13,7 @@ namespace weatherstation.Logic
     {
         public WeatherLogic() {}
 
-        public static void InsertWeatherData(dynamic data)
+        public static async Task InsertWeatherData(dynamic data)
         {
             double temperature = data["temperature"];
             double humidity = data["humidity"];
@@ -47,7 +47,7 @@ namespace weatherstation.Logic
 
             Console.WriteLine(query);
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            db.InsertData(query);
+            await db.InsertData(query);
         }
 
         public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
@@ -58,7 +58,7 @@ namespace weatherstation.Logic
 
             List <CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                async (reader) => new CurrentWeatherDto
+                async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
@@ -66,7 +66,7 @@ namespace weatherstation.Logic
                     Light = reader.GetString("Light"),
                     Humidity = reader.GetDouble("Humidity"),
                     Time = reader.GetDateTime("DateTime")
-                });
+                }));
             
             return results;
         }
@@ -79,7 +79,7 @@ namespace weatherstation.Logic
 
             List<CurrentWeatherDto> results = await db.ExecuteQuery(
                 query,
-                async (reader) => new CurrentWeatherDto
+                async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
@@ -87,7 +87,7 @@ namespace weatherstation.Logic
                     Light = reader.GetString("Light"),
                     Humidity = reader.GetDouble("Humidity"),
                     Time = reader.GetDateTime("DateTime")
-                });
+                }));
 
             return results;
         }

@@ -24,7 +24,7 @@ namespace weatherstation.Functions
             dynamic data = JsonConvert.DeserializeObject<dynamic>(requestBody);
             try
             {
-                WeatherLogic.InsertWeatherData(data);
+                await WeatherLogic.InsertWeatherData(data);
                 return new OkResult();
             }
             catch (Exception ex)
