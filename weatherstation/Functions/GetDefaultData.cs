@@ -22,7 +22,7 @@ namespace weatherstation.Functions
         {
             try
             {
-                List<CurrentWeatherDto> dto = await WeatherLogic.GetCurrentWeather();
+                List<CurrentWeatherDto> dto = await WeatherLogic.GetAllWeather();
 
                 return new OkObjectResult(dto);
             } 
