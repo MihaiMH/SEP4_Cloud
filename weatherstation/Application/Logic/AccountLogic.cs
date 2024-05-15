@@ -98,9 +98,9 @@ namespace weatherstation.Application.Logic
             string query = someQuery.Replace("[VAR_EMAIL]", email);
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.HasRows));
+            var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
 
-            return !result.Any(); // Return true if no rows are found (email is unique), false otherwise
+            return result.FirstOrDefault() == 0;
         }
 
 
