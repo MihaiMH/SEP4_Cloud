@@ -58,10 +58,8 @@ namespace weatherstation.Functions
                     result = await RecommendationLogic.GetRecommendation(json, tokenData);
                 }
 
-                // Convert the result to JSON
-                var jsonResult = JsonConvert.SerializeObject(result, Formatting.Indented);
+                var jsonResult = JsonConvert.SerializeObject(new { recommendation = result }, Formatting.Indented);
 
-                // Set the response status code and body
                 response.StatusCode = HttpStatusCode.OK;
                 response.Body = new MemoryStream(Encoding.UTF8.GetBytes(jsonResult));
                 return response;
@@ -70,7 +68,6 @@ namespace weatherstation.Functions
             {
                 _logger.LogError(ex.Message);
 
-                // In case of an error, return an Internal Server Error
                 response.StatusCode = HttpStatusCode.InternalServerError;
                 response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting the recommendations" }, Formatting.Indented)));
                 return response;
