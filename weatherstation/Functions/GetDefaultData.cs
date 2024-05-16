@@ -1,7 +1,8 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using System.Text;
 using weatherstation.Domain.DTOs;
 using weatherstation.Logic;
 
@@ -18,18 +19,24 @@ namespace weatherstation.Functions
         }
 
         [Function("GetDefaultData")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequest req)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData reqData)
         {
+            var res = reqData.CreateResponse();
+
             try
             {
                 List<CurrentWeatherDto> dto = await WeatherLogic.GetAllWeather();
+                res.StatusCode = System.Net.HttpStatusCode.OK;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto)));
+                return res;
 
-                return new OkObjectResult(dto);
             } 
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "There was an error while retrieving data." })));
+                return res;
             }
         }
     }

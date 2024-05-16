@@ -1,9 +1,13 @@
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System;
+using System.IO;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
 using weatherstation.Application.Logic;
 using weatherstation.Utils;
 
@@ -19,7 +23,7 @@ namespace weatherstation.Functions
         }
 
         [Function("GetRecommendation")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData reqData)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData reqData)
         {
             var response = reqData.CreateResponse();
 
@@ -30,12 +34,11 @@ namespace weatherstation.Functions
                 // Check if the Authorization header is present
                 string token = decoder.Extract(reqData);
 
-
                 _logger.LogError(token);
 
                 // Read the request body
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
-                JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
+                var json = JsonConvert.DeserializeObject<JObject>(requestBody);
 
                 if (json == null)
                 {
@@ -54,13 +57,23 @@ namespace weatherstation.Functions
                     _logger.LogError(decoder.DictionaryToString(tokenData));
                     result = await RecommendationLogic.GetRecommendation(json, tokenData);
                 }
-                // Return the token as the response
-                return new OkObjectResult(result);
+
+                // Convert the result to JSON
+                var jsonResult = JsonConvert.SerializeObject(result);
+
+                // Set the response status code and body
+                response.StatusCode = HttpStatusCode.OK;
+                response.Body = new MemoryStream(Encoding.UTF8.GetBytes(jsonResult));
+                return response;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex.Message);
-                return new OkObjectResult(ex);
+
+                // In case of an error, return an Internal Server Error
+                response.StatusCode = HttpStatusCode.InternalServerError;
+                response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting the recommendations" })));
+                return response;
             }
         }
     }

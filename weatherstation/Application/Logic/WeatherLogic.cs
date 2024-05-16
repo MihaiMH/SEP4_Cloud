@@ -17,9 +17,9 @@ namespace weatherstation.Logic
         {
             double temperature = data["temperature"];
             double humidity = data["humidity"];
-            int light = data["light"];
+            double light = data["light"];
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q2", EnvironmentVariableTarget.Process);
-            string lightString = "";
+            string lightString;
 
             if (light <= 26)
             {
@@ -63,7 +63,7 @@ namespace weatherstation.Logic
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
                     Temperature = reader.GetDouble("Temperature"),
-                    Light = reader.GetString("Light"),
+                    Light = reader.GetDouble("Light"),
                     Humidity = reader.GetDouble("Humidity"),
                     Time = reader.GetDateTime("DateTime")
                 }));
@@ -84,7 +84,7 @@ namespace weatherstation.Logic
                     Id = reader.GetInt32("Id"),
                     WeatherState = reader.GetString("WeatherState"),
                     Temperature = reader.GetDouble("Temperature"),
-                    Light = reader.GetString("Light"),
+                    Light = reader.GetDouble("Light"),
                     Humidity = reader.GetDouble("Humidity"),
                     Time = reader.GetDateTime("DateTime")
                 }));
