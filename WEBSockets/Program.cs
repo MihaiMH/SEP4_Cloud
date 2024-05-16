@@ -22,8 +22,8 @@ namespace weatherstation
             TcpListener server = null;
             try
             {
-                Int32 port = 11000;
-                IPAddress localAddr = IPAddress.Parse("127.0.0.1");
+                Int32 port = 2228;
+                IPAddress localAddr = IPAddress.Parse("20.13.143.114");
 
                 server = new TcpListener(localAddr, port);
 
