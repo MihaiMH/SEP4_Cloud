@@ -72,8 +72,7 @@ namespace weatherstation.Application.Logic
                 throw new ArgumentException("Email already in use");
             }
 
-            string salt = BCrypt.Net.BCrypt.GenerateSalt();
-            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
+            string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password);
 
 
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q3", EnvironmentVariableTarget.Process);
