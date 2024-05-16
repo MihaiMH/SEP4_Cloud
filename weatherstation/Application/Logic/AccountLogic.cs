@@ -30,7 +30,7 @@ namespace weatherstation.Application.Logic
             // Check if the user exists
             if (someUser == null)
             {
-                throw new ArgumentException("Invalid gotemail or password.");
+                throw new ArgumentException("Invalid email or password.");
             }
 
             // Verify the password
