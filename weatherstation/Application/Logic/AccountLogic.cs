@@ -5,6 +5,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
+using weatherstation.Domain.DTOs;
 using weatherstation.Domain.Model;
 using weatherstation.Utils;
 
@@ -110,28 +111,19 @@ namespace weatherstation.Application.Logic
             string query = someQuery.Replace("[VAR_EMAIL]", email); 
 
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var result = await db.ExecuteQuery(query, async (reader) =>
-            {
-                if (reader.HasRows)
-                {
-                    await reader.ReadAsync();
 
-                    return new User
-                    {
-                        Id = reader.GetInt32(reader.GetOrdinal("Id")),
-                        FirstName = reader.GetString(reader.GetOrdinal("FirstName")),
-                        LastName = reader.GetString(reader.GetOrdinal("LastName")),
-                        Email = reader.GetString(reader.GetOrdinal("Email")),
-                        Password = reader.GetString(reader.GetOrdinal("Password")),
-                        OnNotifications = reader.GetBoolean(reader.GetOrdinal("OnNotifications")),
-                        Preferences = reader.GetString(reader.GetOrdinal("Preferences"))
-                    };
-                }
-                else
+            var result = await db.ExecuteQuery(
+                query, 
+                async (reader) => await Task.FromResult(new User
                 {
-                    return null;
-                }
-            });
+                    Id = reader.GetInt32("Id"),
+                    FirstName = reader.GetString("FirstName"),
+                    LastName = reader.GetString("LastName"),
+                    Email = reader.GetString("Email"),
+                    Password = reader.GetString("Password"),
+                    OnNotifications = reader.GetBoolean("OnNotifications"),
+                    Preferences = reader.GetString("Preferences")
+                }));
 
             return result.FirstOrDefault();
         }
