@@ -43,7 +43,7 @@ namespace weatherstation.Logic
                 .Replace("[VAR_TEMPERATURE]", temperature.ToString())
                 .Replace("[VAR_LIGHT]", light.ToString())
                 .Replace("[VAR_HUMIDITY]", humidity.ToString())
-                .Replace("[VAR_DATETIME]", "'" + DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss") + "'");
+                .Replace("[VAR_DATETIME]", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
 
             Console.WriteLine(query);
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
