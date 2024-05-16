@@ -31,18 +31,10 @@ namespace weatherstation.Functions
                 TokenDecoder decoder = new TokenDecoder();
                 string token = decoder.Extract(req);
 
-                /*string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-                JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
-
-                if (json == null)
-                {
-                    json = new JObject();
-                }*/
-
                 if (token == null)
                 {
                     res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
-                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to add notifications to account." });
+                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to add notifications to account." }, Formatting.Indented);
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(msg));
                     return res;
                 }
@@ -52,7 +44,7 @@ namespace weatherstation.Functions
                     List<NotificationDto> results = await NotificationLogic.GetNotificationsAsync(tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
-                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(results)));
+                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(results, Formatting.Indented)));
                     return res;
                 }
             }
@@ -60,7 +52,7 @@ namespace weatherstation.Functions
             {
                 _logger.LogInformation(ex, "An error occurred while adding notification.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting user's notifications." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting user's notifications." }, Formatting.Indented)));
                 return res;
             }
         }

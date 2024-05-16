@@ -29,21 +29,21 @@ namespace weatherstation.Functions
                 await AccountLogic.RegisterAccount(data);
 
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have successfully created an account." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have successfully created an account." }, Formatting.Indented)));
                 return res;
             }
             catch (ArgumentException ex)
             {
                 _logger.LogError(ex, "Error registering: {Message}", ex.Message);
                 res.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message }, Formatting.Indented)));
                 return res;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while registering.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while registering." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while registering." }, Formatting.Indented)));
                 return res;
             }
         }

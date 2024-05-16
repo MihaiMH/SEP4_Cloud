@@ -33,7 +33,7 @@ namespace weatherstation.Functions
                 var token = await AccountLogic.LoginAccount(userData);
 
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                var json = JsonConvert.SerializeObject(new { token = token });
+                var json = JsonConvert.SerializeObject(new { token = token }, Formatting.Indented);
                 res.Body = new MemoryStream(Encoding.UTF8.GetBytes(json));
                 return res;
             }
@@ -41,14 +41,14 @@ namespace weatherstation.Functions
             {
                 _logger.LogError(ex, "Error logging in: {Message}", ex.Message);
                 res.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message }, Formatting.Indented)));
                 return res;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while logging in.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while logging in." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while logging in." }, Formatting.Indented)));
                 return res;
             }
         }

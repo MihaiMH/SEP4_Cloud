@@ -40,7 +40,7 @@ namespace weatherstation.Functions
                 if (token == null)
                 {
                     res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
-                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to add notifications to account." });
+                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to add notifications to account." }, Formatting.Indented);
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(msg));
                     return res;
                 }
@@ -50,7 +50,7 @@ namespace weatherstation.Functions
                     await NotificationLogic.AddNotificationAsync(json, tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
-                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have added a notification to your account successfully." })));
+                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have added a notification to your account successfully." }, Formatting.Indented)));
                     return res;
                 }
             }
@@ -58,7 +58,7 @@ namespace weatherstation.Functions
             {
                 _logger.LogInformation(ex, "An error occurred while adding notification.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while adding notification." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while adding notification." }, Formatting.Indented)));
                 return res;
             }
         }

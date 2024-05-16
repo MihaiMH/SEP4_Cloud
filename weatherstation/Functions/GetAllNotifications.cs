@@ -29,14 +29,14 @@ namespace weatherstation.Functions
                 List<NotificationDto> dto = await NotificationLogic.GetNotificationsAsync();
 
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto)));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto, Formatting.Indented)));
                 return res;
             }
             catch (Exception ex)
             {
                 _logger.LogInformation(ex, "An error occurred while getting all notifications.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting all notifications." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting all notifications." }, Formatting.Indented)));
                 return res;
             }
         }

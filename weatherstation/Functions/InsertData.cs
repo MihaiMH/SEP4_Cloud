@@ -29,7 +29,7 @@ namespace weatherstation.Functions
             {
                 await WeatherLogic.InsertWeatherData(json);
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "Data inserted succesfully" })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "Data inserted succesfully" }, Formatting.Indented)));
                 return res;
 
             }
@@ -37,7 +37,7 @@ namespace weatherstation.Functions
             {
                 _logger.LogInformation(ex, "An error occurred while inserting.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occured while inserting data" })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occured while inserting data" }, Formatting.Indented)));
                 return res;
             }
         }
