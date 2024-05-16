@@ -1,76 +1,36 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading;
-using WEBSockets.Domain.Models;
 
 namespace weatherstation
 {
     class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            StartListeningForIoTData();
+            await StartListeningForIoTData();
 
             Console.ReadLine();
         }
 
-        static async void StartListeningForIoTData()
+        static async Task StartListeningForIoTData()
         {
             TcpListener server = null;
             try
             {
                 Int32 port = 2228;
-                IPAddress localAddr = IPAddress.Parse("20.13.143.114");
-
-                server = new TcpListener(localAddr, port);
+                server = new TcpListener(IPAddress.Any, port);
 
                 server.Start();
-
-                Byte[] bytes = new Byte[1024];
-                String data = null;
+                Console.WriteLine("Server started. Waiting for connections...");
 
                 while (true)
                 {
-                    Console.WriteLine("Waiting for a connection... ");
-
-                    TcpClient client = server.AcceptTcpClient();
+                    TcpClient client = await server.AcceptTcpClientAsync();
                     Console.WriteLine("Connected!");
 
-                    data = null;
-
-                    NetworkStream stream = client.GetStream();
-
-                    int i;
-
-                    while ((i = stream.Read(bytes, 0, bytes.Length)) != 0)
-                    {
-                        data = Encoding.UTF8.GetString(bytes, 0, i);
-                        Console.WriteLine("Received: {0}", data);
-
-                        try
-                        {
-                            var jsonData = Newtonsoft.Json.Linq.JObject.Parse(data);
-
-                            double temperature = (double)jsonData["temperature"];
-                            double humidity = (double)jsonData["humidity"];
-                            double light = (double)jsonData["light"];
-
-                            Console.WriteLine($"Temperature: {temperature}, Humidity: {humidity}, Light: {light}");
-
-                            string json = JsonConvert.SerializeObject(jsonData);
-
-                            await SendDataToAzureFunction(json);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error processing data: " + ex.Message);
-                        }
-                    }
-
-                    client.Close();
+                    _ = Task.Run(() => ProcessClientAsync(client));
                 }
             }
             catch (SocketException e)
@@ -83,7 +43,67 @@ namespace weatherstation
             }
         }
 
-        static async Task SendDataToAzureFunction(string data)
+        static async Task ProcessClientAsync(TcpClient client)
+        {
+            using (client)
+            {
+                NetworkStream stream = client.GetStream();
+                byte[] bytes = new byte[1024];
+                StringBuilder data = new StringBuilder();
+
+                try
+                {
+                    // Wait for the client to send data
+                    while (true)
+                    {
+                        int i = await stream.ReadAsync(bytes, 0, bytes.Length);
+
+                        if (i == 0)
+                        {
+                            Console.WriteLine("Client disconnected.");
+                            break;
+                        }
+
+                        data.Append(Encoding.UTF8.GetString(bytes, 0, i));
+                        Console.WriteLine("Received: {0}", data);
+
+                        try
+                        {
+                            var jsonData = Newtonsoft.Json.Linq.JObject.Parse(data.ToString());
+
+                            double temperature = (double)jsonData["temperature"];
+                            double humidity = (double)jsonData["humidity"];
+                            double light = (double)jsonData["light"];
+
+                            string json = JsonConvert.SerializeObject(jsonData);
+
+                            string res = await SendDataToAzureFunction(json);
+
+                            Console.WriteLine(res);
+                            data.Clear();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine("Error processing data: " + ex.Message);
+                        }
+                    }
+                }
+                catch (JsonReaderException ex)
+                {
+                    Console.WriteLine("Error reading JSON data: " + ex.Message);
+                }
+                catch (IOException ex) when (ex.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.ConnectionReset)
+                {
+                    Console.WriteLine("Client forcibly closed the connection.");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error reading from client: " + ex.Message);
+                }
+            }
+        }
+
+        static async Task<string> SendDataToAzureFunction(string data)
         {
             try
             {
@@ -102,10 +122,13 @@ namespace weatherstation
                 {
                     Console.WriteLine("Failed to send data to Azure Functions.");
                 }
+
+                return await response.Content.ReadAsStringAsync();
             }
             catch (Exception e)
             {
                 Console.WriteLine("Error sending data to Azure Functions: " + e.Message);
+                return HttpStatusCode.InternalServerError.ToString();
             }
         }
     }
