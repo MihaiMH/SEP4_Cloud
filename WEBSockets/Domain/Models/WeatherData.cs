@@ -7,13 +7,13 @@ namespace WEBSockets.Domain.Models
         public int Id { get; set; }
         public string WeatherState { get; set; }
         public double Temperature { get; set; }
-        public string Light { get; set; }
+        public double Light { get; set; }
         public double Humidity { get; set; }
         public DateTime DateTime { get; set; }
 
         public WeatherData() { }
 
-        public WeatherData(string weatherState, double temperature, string light, double humidity, DateTime dateTime)
+        public WeatherData(string weatherState, double temperature, double light, double humidity, DateTime dateTime)
         {
             WeatherState = weatherState;
             Temperature = temperature;

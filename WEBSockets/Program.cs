@@ -1,10 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using WEBSockets.Domain.Models;
-using WEBSockets.EfcDataAccess;
 
 namespace weatherstation
 {
@@ -12,16 +12,12 @@ namespace weatherstation
     {
         static void Main(string[] args)
         {
-            DatabaseContext dbContext = new DatabaseContext();
+            StartListeningForIoTData();
 
-            // Start listening for IoT device connections
-            StartListeningForIoTData(dbContext);
-
-            // Keep the console application running
             Console.ReadLine();
         }
 
-        static void StartListeningForIoTData(DatabaseContext dbContext)
+        static async void StartListeningForIoTData()
         {
             TcpListener server = null;
             try
@@ -60,21 +56,13 @@ namespace weatherstation
 
                             double temperature = (double)jsonData["temperature"];
                             double humidity = (double)jsonData["humidity"];
-                            int light = (int)jsonData["light"];
+                            double light = (double)jsonData["light"];
 
                             Console.WriteLine($"Temperature: {temperature}, Humidity: {humidity}, Light: {light}");
 
-                            var weatherData = new WeatherData
-                            {
-                                WeatherState = "Hz inca",
-                                Temperature = temperature,
-                                Humidity = humidity,
-                                Light = light.ToString(),
-                                DateTime = DateTime.UtcNow
-                            };
+                            string json = JsonConvert.SerializeObject(jsonData);
 
-                            dbContext.WeatherData.Add(weatherData);
-                            dbContext.SaveChanges();
+                            await SendDataToAzureFunction(json);
                         }
                         catch (Exception ex)
                         {
@@ -92,6 +80,32 @@ namespace weatherstation
             finally
             {
                 server.Stop();
+            }
+        }
+
+        static async Task SendDataToAzureFunction(string data)
+        {
+            try
+            {
+                string azureFunction = "https://weatherstation4dev.azurewebsites.net/api/InsertData";
+                HttpClient client = new HttpClient();
+
+                var content = new StringContent(data, Encoding.UTF8, "application/json");
+
+                HttpResponseMessage response = await client.PostAsync(azureFunction, content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    Console.WriteLine("Data sent to Azure Function successfully.");
+                }
+                else
+                {
+                    Console.WriteLine("Failed to send data to Azure Functions.");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Error sending data to Azure Functions: " + e.Message);
             }
         }
     }
