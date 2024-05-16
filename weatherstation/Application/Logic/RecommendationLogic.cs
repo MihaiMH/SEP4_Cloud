@@ -53,7 +53,7 @@ namespace weatherstation.Application.Logic
                 string query = Environment.GetEnvironmentVariable("AIQUERY", EnvironmentVariableTarget.Process);
                 query = query.Replace("[WeatherState]", currentWeather.WeatherState.ToString())
                              .Replace("[Temperature]", currentWeather.Temperature.ToString())
-                             .Replace("[Light]", currentWeather.Light)
+                             .Replace("[Light]", currentWeather.Light.ToString())
                              .Replace("[Humidity]", currentWeather.Humidity.ToString())
                              .Replace("[PREFERENCES]", pref);
 

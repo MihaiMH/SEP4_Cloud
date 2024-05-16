@@ -4,6 +4,8 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+using System.Text;
 using weatherstation.Logic;
 
 namespace weatherstation.Functions
@@ -18,19 +20,25 @@ namespace weatherstation.Functions
         }
 
         [Function("InsertData")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData req)
         {
+            var res = req.CreateResponse(); 
             string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
-            dynamic data = JsonConvert.DeserializeObject<dynamic>(requestBody);
+            JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
             try
             {
-                await WeatherLogic.InsertWeatherData(data);
-                return new OkResult();
+                await WeatherLogic.InsertWeatherData(json);
+                res.StatusCode = System.Net.HttpStatusCode.OK;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "Data inserted succesfully" })));
+                return res;
+
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex.Message);
-                return new StatusCodeResult(StatusCodes.Status500InternalServerError);
+                _logger.LogInformation(ex, "An error occurred while inserting.");
+                res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occured while inserting data" })));
+                return res;
             }
         }
     }
