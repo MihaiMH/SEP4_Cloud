@@ -48,7 +48,7 @@ namespace weatherstation.Functions
                 if (token == null)
                 {
                     res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
-                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to update account." });
+                    var msg = JsonConvert.SerializeObject(new { msg = "Login in order to update account." }, Formatting.Indented);
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(msg));
                     return res;
                 }
@@ -58,7 +58,7 @@ namespace weatherstation.Functions
                     result = await AccountLogic.UpdateAccount(json, tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
-                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { token = result })));
+                    res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { token = result }, Formatting.Indented)));
                     return res;
                 }
             }
@@ -66,14 +66,14 @@ namespace weatherstation.Functions
             {
                 _logger.LogError(ex, "Error updating account: {Message}", ex.Message);
                 res.StatusCode = System.Net.HttpStatusCode.BadRequest;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = ex.Message }, Formatting.Indented)));
                 return res;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "An error occurred while updating the account.");
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while updating the account." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while updating the account." }, Formatting.Indented)));
                 return res;
             }
         }

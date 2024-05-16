@@ -27,7 +27,7 @@ namespace weatherstation.Functions
             {
                 List<CurrentWeatherDto> dto = await WeatherLogic.GetAllWeather();
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto)));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto, Formatting.Indented)));
                 return res;
 
             } 
@@ -35,7 +35,7 @@ namespace weatherstation.Functions
             {
                 _logger.LogError(ex.Message);
                 res.StatusCode = System.Net.HttpStatusCode.InternalServerError;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "There was an error while retrieving data." })));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "There was an error while retrieving data." }, Formatting.Indented)));
                 return res;
             }
         }

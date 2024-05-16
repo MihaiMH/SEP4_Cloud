@@ -59,7 +59,7 @@ namespace weatherstation.Functions
                 }
 
                 // Convert the result to JSON
-                var jsonResult = JsonConvert.SerializeObject(result);
+                var jsonResult = JsonConvert.SerializeObject(result, Formatting.Indented);
 
                 // Set the response status code and body
                 response.StatusCode = HttpStatusCode.OK;
@@ -72,7 +72,7 @@ namespace weatherstation.Functions
 
                 // In case of an error, return an Internal Server Error
                 response.StatusCode = HttpStatusCode.InternalServerError;
-                response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting the recommendations" })));
+                response.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { error = "An error occurred while getting the recommendations" }, Formatting.Indented)));
                 return response;
             }
         }
