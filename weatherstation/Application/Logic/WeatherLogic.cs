@@ -112,9 +112,10 @@ namespace weatherstation.Logic
             string? SOCKET_PORT = Environment.GetEnvironmentVariable("SOCKET_PORT", EnvironmentVariableTarget.Process);
             string? MESSAGE2IOT = Environment.GetEnvironmentVariable("MESSAGE2IOT", EnvironmentVariableTarget.Process);
             SocketManager socket = new SocketManager(SOCKET_IP, Int32.Parse(SOCKET_PORT));
-            string response = await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
-            CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);
-            return dto;
+            await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
+            List<CurrentWeatherDto> list = await GetCurrentWeather();
+            /*CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);*/
+            return list[0];
         }
     }
 }
