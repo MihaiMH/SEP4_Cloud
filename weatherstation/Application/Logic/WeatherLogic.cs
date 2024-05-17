@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -90,6 +91,17 @@ namespace weatherstation.Logic
                 }));
 
             return results;
+        }
+
+        public static async Task<CurrentWeatherDto?> GetInstantWeather()
+        {
+            string? SOCKET_IP = Environment.GetEnvironmentVariable("SOCKET_IP", EnvironmentVariableTarget.Process);
+            string? SOCKET_PORT = Environment.GetEnvironmentVariable("SOCKET_PORT", EnvironmentVariableTarget.Process);
+            string? MESSAGE2IOT = Environment.GetEnvironmentVariable("MESSAGE2IOT", EnvironmentVariableTarget.Process);
+            SocketManager socket = new SocketManager(SOCKET_IP, Int32.Parse(SOCKET_PORT));
+            string response = await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
+            CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);
+            return dto;
         }
     }
 }
