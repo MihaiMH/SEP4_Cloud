@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using MySqlX.XDevAPI;
+using Newtonsoft.Json;
+using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -7,6 +9,7 @@ namespace weatherstation
 {
     class Program
     {
+        static ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
         static async Task Main(string[] args)
         {
             await StartListeningForIoTData();
@@ -28,9 +31,11 @@ namespace weatherstation
                 while (true)
                 {
                     TcpClient client = await server.AcceptTcpClientAsync();
+                    Guid clientId = Guid.NewGuid();
+                    clients.TryAdd(clientId, client);
                     Console.WriteLine("Connected!");
 
-                    _ = Task.Run(() => ProcessClientAsync(client));
+                    _ = Task.Run(() => ProcessClientAsync(client, clientId));
                 }
             }
             catch (SocketException e)
@@ -43,7 +48,7 @@ namespace weatherstation
             }
         }
 
-        static async Task ProcessClientAsync(TcpClient client)
+        static async Task ProcessClientAsync(TcpClient client, Guid clientId)
         {
             using (client)
             {
@@ -53,7 +58,6 @@ namespace weatherstation
 
                 try
                 {
-                    // Wait for the client to send data
                     while (true)
                     {
                         int i = await stream.ReadAsync(bytes, 0, bytes.Length);
@@ -61,6 +65,7 @@ namespace weatherstation
                         if (i == 0)
                         {
                             Console.WriteLine("Client disconnected.");
+                            clients.TryRemove(clientId, out _);
                             break;
                         }
 
@@ -77,18 +82,23 @@ namespace weatherstation
                                 if (msg.Equals("updateWeather"))
                                 {
                                     Console.WriteLine("Trigger IoT Device");
-                                    data.Clear();
+                                    await SendMessageToAllClients("updateWeather");
                                 }
                             }
 
-                            double temperature = (double)jsonData["temperature"];
-                            double humidity = (double)jsonData["humidity"];
-                            double light = (double)jsonData["light"];
+                            if (jsonData.TryGetValue("temperature", out var temperatureToken) &&
+                                jsonData.TryGetValue("humidity", out var humidityToken) &&
+                                jsonData.TryGetValue("light", out var lightToken))
+                            {
+                                double temperature = (double)temperatureToken;
+                                double humidity = (double)humidityToken;
+                                double light = (double)lightToken;
 
-                            string json = JsonConvert.SerializeObject(jsonData);
+                                string json = JsonConvert.SerializeObject(jsonData);
 
-                            Console.WriteLine(json);
-                            string res = await SendDataToAzureFunction(json);
+                                Console.WriteLine(json);
+                                string res = await SendDataToAzureFunction(json);
+                            }
 
                             data.Clear();
                         }
@@ -105,10 +115,35 @@ namespace weatherstation
                 catch (IOException ex) when (ex.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.ConnectionReset)
                 {
                     Console.WriteLine("Client forcibly closed the connection.");
+                    clients.TryRemove(clientId, out _);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error reading from client: " + ex.Message);
+                }
+            }
+        }
+
+        static async Task SendMessageToAllClients(string message)
+        {
+            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            foreach (var kvp in clients)
+            {
+                var clientId = kvp.Key;
+                var client = kvp.Value;
+
+                try
+                {
+                    if (client.Connected)
+                    {
+                        NetworkStream stream = client.GetStream();
+                        await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                        Console.WriteLine("Message sent to client " + clientId);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error sending message to client " + clientId + ": " + ex.Message);
                 }
             }
         }
