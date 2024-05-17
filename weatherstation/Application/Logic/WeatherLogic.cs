@@ -1,208 +1,121 @@
-﻿using MySqlX.XDevAPI;
+﻿using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using System.Collections.Concurrent;
-using System.Net;
-using System.Net.Sockets;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using weatherstation.Domain.DTOs;
+using weatherstation.Utils;
 
-namespace weatherstation
+namespace weatherstation.Logic
 {
-    class Program
+    internal class WeatherLogic
     {
-        static ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
-        static Guid weatherUpdateClientId;
+        public WeatherLogic() {}
 
-        static async Task Main(string[] args)
+        public static async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
         {
-            await StartListeningForIoTData();
+            double temperature = data["temperature"];
+            double humidity = data["humidity"];
+            double light = data["light"];
+            string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q2", EnvironmentVariableTarget.Process);
+            string lightString;
 
-            Console.ReadLine();
+            if (light <= 26)
+            {
+                lightString = "Sunny";
+            }
+            else if (light > 26 && light < 60)
+            {
+                lightString = "Little Cloudy";
+            }
+            else if (light >= 60 && light <= 80)
+            {
+                lightString = "Cloudy";
+            }
+            else
+            {
+                lightString = "Night";
+            }
+
+            string time = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
+            string query = queryTemplate
+                .Replace("[VAR_WEATHERSTATE]", lightString)
+                .Replace("[VAR_TEMPERATURE]", temperature.ToString())
+                .Replace("[VAR_LIGHT]", light.ToString())
+                .Replace("[VAR_HUMIDITY]", humidity.ToString())
+                .Replace("[VAR_DATETIME]", time);
+
+            CurrentWeatherDto dto = new CurrentWeatherDto
+            {
+                Id = -5,
+                WeatherState = lightString,
+                Temperature = temperature,
+                Humidity = humidity,
+                Light = light,
+                Time = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None)
+            };
+            Console.WriteLine(query);
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+            await db.InsertData(query);
+
+            return dto;
         }
 
-        static async Task StartListeningForIoTData()
+        public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
         {
-            TcpListener server = null;
-            try
-            {
-                Int32 port = 2228;
-                server = new TcpListener(IPAddress.Any, port);
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-                server.Start();
-                Console.WriteLine("Server started. Waiting for connections...");
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q5", EnvironmentVariableTarget.Process);
 
-                while (true)
+            List <CurrentWeatherDto> results = await db.ExecuteQuery(
+                query,
+                async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
-                    TcpClient client = await server.AcceptTcpClientAsync();
-                    Guid clientId = Guid.NewGuid();
-                    clients.TryAdd(clientId, client);
-                    Console.WriteLine($"Connected! Device ID: {clientId}");
-                    _ = Task.Run(() => ProcessClientAsync(client, clientId));
-                }
-            }
-            catch (SocketException e)
-            {
-                Console.WriteLine("SocketException: {0}", e);
-            }
-            finally
-            {
-                server.Stop();
-            }
+                    Id = reader.GetInt32("Id"),
+                    WeatherState = reader.GetString("WeatherState"),
+                    Temperature = reader.GetDouble("Temperature"),
+                    Light = reader.GetDouble("Light"),
+                    Humidity = reader.GetDouble("Humidity"),
+                    Time = reader.GetDateTime("DateTime")
+                }));
+            
+            return results;
         }
 
-        static async Task ProcessClientAsync(TcpClient client, Guid clientId)
+        public static async Task<List<CurrentWeatherDto>> GetAllWeather()
         {
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            using (client)
-            {
-                NetworkStream stream = client.GetStream();
-                byte[] bytes = new byte[1024];
-                StringBuilder data = new StringBuilder();
+            string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-                try
+            List<CurrentWeatherDto> results = await db.ExecuteQuery(
+                query,
+                async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
-                    while (true)
-                    {
-                        int i = await stream.ReadAsync(bytes, 0, bytes.Length);
+                    Id = reader.GetInt32("Id"),
+                    WeatherState = reader.GetString("WeatherState"),
+                    Temperature = reader.GetDouble("Temperature"),
+                    Light = reader.GetDouble("Light"),
+                    Humidity = reader.GetDouble("Humidity"),
+                    Time = reader.GetDateTime("DateTime")
+                }));
 
-                        if (i == 0)
-                        {
-                            Console.WriteLine("Client disconnected.");
-                            clients.TryRemove(clientId, out _);
-                            break;
-                        }
-
-                        data.Append(Encoding.UTF8.GetString(bytes, 0, i));
-                        Console.WriteLine("Received: {0}", data);
-
-                        try
-                        {
-                            var jsonData = Newtonsoft.Json.Linq.JObject.Parse(data.ToString());
-
-                            if (jsonData.TryGetValue("msg", out var msgToken))
-                            {
-                                string msg = msgToken.ToString();
-                                if (msg.Equals("updateWeather"))
-                                {
-                                    Console.WriteLine("Trigger IoT Device");
-                                    weatherUpdateClientId = clientId;
-                                    await SendMessageToAllClients("updateWeather", clientId);
-                                }
-                            }
-
-                            if (jsonData.TryGetValue("temperature", out var temperatureToken) &&
-                                jsonData.TryGetValue("humidity", out var humidityToken) &&
-                                jsonData.TryGetValue("light", out var lightToken))
-                            {
-                                double temperature = (double)temperatureToken;
-                                double humidity = (double)humidityToken;
-                                double light = (double)lightToken;
-
-                                string json = JsonConvert.SerializeObject(jsonData);
-
-                                Console.WriteLine(json);
-                                string res = await SendDataToAzureFunction(json, weatherUpdateClientId);
-                            }
-
-                            data.Clear();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine("Error processing data: " + ex.Message);
-                        }
-                    }
-                }
-                catch (JsonReaderException ex)
-                {
-                    Console.WriteLine("Error reading JSON data: " + ex.Message);
-                }
-                catch (IOException ex) when (ex.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.ConnectionReset)
-                {
-                    Console.WriteLine("Client forcibly closed the connection.");
-                    clients.TryRemove(clientId, out _);
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error reading from client: " + ex.Message);
-                }
-            }
+            return results;
         }
 
-        static async Task SendMessageToAllClients(string message, Guid senderClientId)
+        public static async Task<CurrentWeatherDto?> GetInstantWeather()
         {
-            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
-            foreach (var kvp in clients)
-            {
-                var clientId = kvp.Key;
-                var client = kvp.Value;
-
-                try
-                {
-                    if (clientId != senderClientId && client.Connected)
-                    {
-                        NetworkStream stream = client.GetStream();
-                        await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                        Console.WriteLine("Message sent to client " + clientId);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Error sending message to client " + clientId + ": " + ex.Message);
-                }
-            }
-        }
-
-        static async Task SendDataToClient(string data, Guid clientId)
-        {
-            try
-            {
-                if (clients.TryGetValue(clientId, out TcpClient client) && client.Connected)
-                {
-                    NetworkStream stream = client.GetStream();
-                    byte[] messageBytes = Encoding.UTF8.GetBytes(data);
-                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
-                    Console.WriteLine("Data sent to client " + clientId + ": " + data);
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error sending data to client " + clientId + ": " + ex.Message);
-            }
-        }
-
-        static async Task<string> SendDataToAzureFunction(string data, Guid clientId)
-        {
-            try
-            {
-                string azureFunction = "https://weatherstation4dev.azurewebsites.net/api/InsertData";
-                HttpClient client = new HttpClient();
-
-                var content = new StringContent(data, Encoding.UTF8, "application/json");
-
-                HttpResponseMessage response = await client.PostAsync(azureFunction, content);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    Console.WriteLine("Data sent to Azure Function successfully.");
-                    await SendDataToClient(data, clientId);
-                }
-                else
-                {
-                    Console.WriteLine("Failed to send data to Azure Functions.");
-                }
-
-                return await response.Content.ReadAsStringAsync();
-            }
-            catch (IOException ex) when (ex.InnerException is SocketException socketException && socketException.SocketErrorCode == SocketError.ConnectionReset)
-            {
-                Console.WriteLine("Client forcibly closed the connection.");
-                clients.TryRemove(clientId, out _);
-                return HttpStatusCode.InternalServerError.ToString();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Error sending data to Azure Functions: " + e.Message);
-                return HttpStatusCode.InternalServerError.ToString();
-            }
+            string? SOCKET_IP = Environment.GetEnvironmentVariable("SOCKET_IP", EnvironmentVariableTarget.Process);
+            string? SOCKET_PORT = Environment.GetEnvironmentVariable("SOCKET_PORT", EnvironmentVariableTarget.Process);
+            string? MESSAGE2IOT = Environment.GetEnvironmentVariable("MESSAGE2IOT", EnvironmentVariableTarget.Process);
+            SocketManager socket = new SocketManager(SOCKET_IP, Int32.Parse(SOCKET_PORT));
+            await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
+            List<CurrentWeatherDto> list = await GetCurrentWeather();
+            /*CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);*/
+            return list[0];
         }
     }
 }
