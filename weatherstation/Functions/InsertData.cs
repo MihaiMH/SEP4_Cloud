@@ -1,11 +1,10 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
+using weatherstation.Domain.DTOs;
 using weatherstation.Logic;
 
 namespace weatherstation.Functions
@@ -27,9 +26,9 @@ namespace weatherstation.Functions
             JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
             try
             {
-                await WeatherLogic.InsertWeatherData(json);
+                CurrentWeatherDto dto = await WeatherLogic.InsertWeatherData(json);
                 res.StatusCode = System.Net.HttpStatusCode.OK;
-                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "Data inserted succesfully" }, Formatting.Indented)));
+                res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { data = dto, msg = "Data inserted succesfully" }, Formatting.Indented)));
                 return res;
 
             }

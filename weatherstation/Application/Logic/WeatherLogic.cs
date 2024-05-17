@@ -14,7 +14,7 @@ namespace weatherstation.Logic
     {
         public WeatherLogic() {}
 
-        public static async Task InsertWeatherData(dynamic data)
+        public static async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
         {
             double temperature = data["temperature"];
             double humidity = data["humidity"];
@@ -39,16 +39,29 @@ namespace weatherstation.Logic
                 lightString = "Night";
             }
 
+            string time = DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss");
+
             string query = queryTemplate
                 .Replace("[VAR_WEATHERSTATE]", lightString)
                 .Replace("[VAR_TEMPERATURE]", temperature.ToString())
                 .Replace("[VAR_LIGHT]", light.ToString())
                 .Replace("[VAR_HUMIDITY]", humidity.ToString())
-                .Replace("[VAR_DATETIME]", DateTime.UtcNow.ToString("yyyy-MM-dd HH:mm:ss"));
+                .Replace("[VAR_DATETIME]", time);
 
+            CurrentWeatherDto dto = new CurrentWeatherDto
+            {
+                Id = -5,
+                WeatherState = lightString,
+                Temperature = temperature,
+                Humidity = humidity,
+                Light = light,
+                Time = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None)
+            };
             Console.WriteLine(query);
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             await db.InsertData(query);
+
+            return dto;
         }
 
         public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
