@@ -33,10 +33,10 @@ namespace weatherstation.Application.Logic
                 sqlCon = sqlCon.Replace("[ID]", token["unique_name"]);
 
                 List<Preference> preference = await db.ExecuteQuery(sqlCon,
-                   async (reader) => new Preference
+                   async (reader) => await Task.FromResult(new Preference
                    {
                        Text = reader.GetString("Preferences")
-                   });
+                   }));
 
                 if (preference.Count > 0 && !String.IsNullOrEmpty(preference[0].Text))
                 {
