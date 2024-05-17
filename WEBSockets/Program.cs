@@ -71,15 +71,25 @@ namespace weatherstation
                         {
                             var jsonData = Newtonsoft.Json.Linq.JObject.Parse(data.ToString());
 
+                            if (jsonData.TryGetValue("msg", out var msgToken))
+                            {
+                                string msg = msgToken.ToString();
+                                if (msg.Equals("updateWeather"))
+                                {
+                                    Console.WriteLine("Trigger IoT Device");
+                                    data.Clear();
+                                }
+                            }
+
                             double temperature = (double)jsonData["temperature"];
                             double humidity = (double)jsonData["humidity"];
                             double light = (double)jsonData["light"];
 
                             string json = JsonConvert.SerializeObject(jsonData);
 
+                            Console.WriteLine(json);
                             string res = await SendDataToAzureFunction(json);
 
-                            Console.WriteLine(res);
                             data.Clear();
                         }
                         catch (Exception ex)
