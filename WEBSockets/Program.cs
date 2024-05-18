@@ -4,15 +4,20 @@ using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 
 namespace weatherstation
 {
     class Program
     {
         static ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
+        static Timer updateWeatherTimer;
+
         static async Task Main(string[] args)
         {
+            ScheduleUpdateWeatherMessage();
             await StartListeningForIoTData();
+            
 
             Console.ReadLine();
         }
@@ -175,6 +180,44 @@ namespace weatherstation
                 Console.WriteLine("Error sending data to Azure Functions: " + e.Message);
                 return HttpStatusCode.InternalServerError.ToString();
             }
+        }
+
+        static void ScheduleUpdateWeatherMessage()
+        {
+            DateTime now = DateTime.Now;
+            DateTime nextRun = GetNextRunTime(now);
+            TimeSpan initialDelay = nextRun - now;
+            Console.WriteLine($"DELAY NOW SET FOR {initialDelay} from {now.ToString()} to {nextRun.ToString()}");
+            updateWeatherTimer = new Timer(async _ =>
+            {
+                await SendMessageToAllClients("updateWeather");
+                Console.WriteLine($"TRIGGER RUN NOW AT {DateTime.Now.ToString()}");
+                Console.WriteLine("Trigger IOT Device");
+                ScheduleUpdateWeatherMessage(); // Reschedule the timer for the next run
+            }, null, initialDelay, Timeout.InfiniteTimeSpan);
+        }
+
+        static DateTime GetNextRunTime(DateTime now)
+        {
+            int minutes = now.Minute;
+            int hours = now.Hour;
+            DateTime nextRun;
+     
+            if (minutes < 25)
+            {
+                nextRun = new DateTime(now.Year, now.Month, now.Day, hours, 25, 0);
+            }
+            else if (minutes < 55)
+            {
+                nextRun = new DateTime(now.Year, now.Month, now.Day, hours, 55, 0);
+            }
+            else
+            {
+                nextRun = new DateTime(now.Year, now.Month, now.Day, hours, 25, 0).AddHours(1);
+            }
+
+
+            return nextRun;
         }
     }
 }
