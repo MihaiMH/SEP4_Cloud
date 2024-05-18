@@ -117,5 +117,55 @@ namespace weatherstation.Logic
             /*CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);*/
             return list[0];
         }
+
+        public static async Task<dynamic> GetStatistics(string interval)
+        {
+            
+            string? q1 = Environment.GetEnvironmentVariable("STATSQ1", EnvironmentVariableTarget.Process);
+            string? q2 = Environment.GetEnvironmentVariable("STATSQ2", EnvironmentVariableTarget.Process);
+            string? q3 = Environment.GetEnvironmentVariable("STATSQ3", EnvironmentVariableTarget.Process);
+            string? q4 = Environment.GetEnvironmentVariable("STATSQ4", EnvironmentVariableTarget.Process);
+
+            q1 = q1.Replace("[INTERVAL]", interval);
+            q2 = q2.Replace("[INTERVAL]", interval);
+            q3 = q3.Replace("[INTERVAL]", interval);
+            q4 = q4.Replace("[INTERVAL]", interval);
+
+
+            var summary =  ExecuteJsonQuery(q1);
+            var temperatureGraph =  ExecuteJsonQuery(q2);
+            var averageHumidity =  ExecuteJsonQuery(q3);
+            var weatherStateSummary =  ExecuteJsonQuery(q4);
+
+            // Await all tasks to complete
+            await Task.WhenAll(summary, temperatureGraph, averageHumidity, weatherStateSummary);
+
+            // Combine results
+            var allData = new
+            {
+                summary = Newtonsoft.Json.JsonConvert.DeserializeObject(summary.Result),
+                temperatureGraph = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(temperatureGraph.Result),
+                averageHumidity = Newtonsoft.Json.JsonConvert.DeserializeObject<List<dynamic>>(averageHumidity.Result),
+                weatherStateSummary = Newtonsoft.Json.JsonConvert.DeserializeObject(weatherStateSummary.Result)
+            };
+
+            // Convert the combined data object back to JSON string
+
+            return allData;
+
+        }
+
+        private static async Task<string> ExecuteJsonQuery(string query)
+        {
+
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+            var results = await db.ExecuteQuery(query, async reader =>
+            {
+                string jsonData = await reader.GetFieldValueAsync<string>(0); // Assuming JSON is in the first column
+                return new JsonResultData { JsonData = jsonData };
+            });
+
+            return results.FirstOrDefault()?.JsonData ?? "{}"; // Return JSON or empty JSON object
+        }
     }
 }
