@@ -1,24 +1,21 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker.Http;
+﻿using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker;
 using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using weatherstation.Application.Logic;
 using Microsoft.Extensions.Logging;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Functions
 {
     internal class LoginAccount
     {
         private readonly ILogger<LoginAccount> _logger;
+        private IAccountLogic accountLogic;
 
-        public LoginAccount(ILogger<LoginAccount> logger) {
+        public LoginAccount(ILogger<LoginAccount> logger, IAccountLogic accountLogic) 
+        {
             _logger = logger;
+            this.accountLogic = accountLogic;
         }
 
         [Function("LoginAccount")]
@@ -30,7 +27,7 @@ namespace weatherstation.Functions
             {
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
                 var userData = JsonConvert.DeserializeObject<dynamic>(requestBody);
-                var token = await AccountLogic.LoginAccount(userData);
+                var token = await accountLogic.LoginAccount(userData);
 
                 res.StatusCode = System.Net.HttpStatusCode.OK;
                 var json = JsonConvert.SerializeObject(new { token = token }, Formatting.Indented);

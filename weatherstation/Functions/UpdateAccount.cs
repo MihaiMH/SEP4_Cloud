@@ -1,16 +1,10 @@
-using System;
-using System.IO;
 using System.Text;
-using System.Threading.Tasks;
-using Azure;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions
@@ -18,10 +12,12 @@ namespace weatherstation.Functions
     internal class UpdateAccount
     {
         private readonly ILogger<UpdateAccount> _logger;
+        private IAccountLogic accountLogic;
 
-        public UpdateAccount(ILogger<UpdateAccount> logger)
+        public UpdateAccount(ILogger<UpdateAccount> logger, IAccountLogic accountLogic)
         {
             _logger = logger;
+            this.accountLogic = accountLogic;
         }
 
         [Function("UpdateAccount")]
@@ -55,7 +51,7 @@ namespace weatherstation.Functions
                 else
                 {
                     Dictionary<string, string> tokenData = decoder.Decode(token);
-                    result = await AccountLogic.UpdateAccount(json, tokenData);
+                    result = await accountLogic.UpdateAccount(json, tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { token = result }, Formatting.Indented)));

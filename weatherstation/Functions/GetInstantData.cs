@@ -1,25 +1,24 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
-using weatherstation.Application.Logic;
 using weatherstation.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using weatherstation.Domain.DTOs;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Functions
 {
     public class GetInstantData
     {
         private readonly ILogger<GetInstantData> _logger;
+        private IWeatherLogic weatherLogic;
 
-        public GetInstantData(ILogger<GetInstantData> logger)
+        public GetInstantData(ILogger<GetInstantData> logger, IWeatherLogic weatherLogic)
         {
             _logger = logger;
+            this.weatherLogic = weatherLogic;
         }
 
         [Function("GetInstantData")]
@@ -50,7 +49,7 @@ namespace weatherstation.Functions
                 }
                 else
                 {
-                    CurrentWeatherDto? dto = await WeatherLogic.GetInstantWeather();
+                    CurrentWeatherDto? dto = await weatherLogic.GetInstantWeather();
                     res.StatusCode = System.Net.HttpStatusCode.OK;
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto, Formatting.Indented)));
                     return res;

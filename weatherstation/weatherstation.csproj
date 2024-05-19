@@ -7,11 +7,6 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Remove="Application\LogicInterfaces\**" />
-    <EmbeddedResource Remove="Application\LogicInterfaces\**" />
-    <None Remove="Application\LogicInterfaces\**" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="local.settings.json" />
   </ItemGroup>
   <ItemGroup>

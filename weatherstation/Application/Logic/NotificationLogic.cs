@@ -1,18 +1,12 @@
-﻿using Newtonsoft.Json.Linq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.DTOs;
-using weatherstation.Domain.Model;
 using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
 {
-    public class NotificationLogic
+    public class NotificationLogic : INotificationLogic
     {
-        public static async Task<List<NotificationDto>> GetNotificationsAsync()
+        public async Task<List<NotificationDto>> GetNotificationsAsync()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
@@ -32,7 +26,7 @@ namespace weatherstation.Application.Logic
             return results;
         }
 
-        public static async Task AddNotificationAsync(dynamic data, Dictionary<string, string> token)
+        public async Task AddNotificationAsync(dynamic data, Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
@@ -61,7 +55,7 @@ namespace weatherstation.Application.Logic
             await db.InsertData(newQuery);
         }
 
-        public static async Task<List<NotificationDto>> GetNotificationsAsync(Dictionary<string, string> token)
+        public async Task<List<NotificationDto>> GetNotificationsAsync(Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];

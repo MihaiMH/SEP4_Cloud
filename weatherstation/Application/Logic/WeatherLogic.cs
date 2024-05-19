@@ -1,20 +1,14 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.DTOs;
 using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
 {
-    public class WeatherLogic
+    public class WeatherLogic : IWeatherLogic
     {
         public WeatherLogic() {}
 
-        public static async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
+        public async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
         {
             double temperature = data["temperature"];
             double humidity = data["humidity"];
@@ -64,7 +58,7 @@ namespace weatherstation.Application.Logic
             return dto;
         }
 
-        public static async Task<List<CurrentWeatherDto>> GetCurrentWeather()
+        public async Task<List<CurrentWeatherDto>> GetCurrentWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
@@ -85,7 +79,7 @@ namespace weatherstation.Application.Logic
             return results;
         }
 
-        public static async Task<List<CurrentWeatherDto>> GetAllWeather()
+        public async Task<List<CurrentWeatherDto>> GetAllWeather()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
@@ -106,7 +100,7 @@ namespace weatherstation.Application.Logic
             return results;
         }
 
-        public static async Task<CurrentWeatherDto?> GetInstantWeather()
+        public async Task<CurrentWeatherDto?> GetInstantWeather()
         {
             string? SOCKET_IP = Environment.GetEnvironmentVariable("SOCKET_IP", EnvironmentVariableTarget.Process);
             string? SOCKET_PORT = Environment.GetEnvironmentVariable("SOCKET_PORT", EnvironmentVariableTarget.Process);
@@ -118,7 +112,7 @@ namespace weatherstation.Application.Logic
             return list[0];
         }
 
-        public static async Task<dynamic> GetStatistics(string interval)
+        public async Task<dynamic> GetStatistics(string interval)
         {
             
             string? q1 = Environment.GetEnvironmentVariable("STATSQ1", EnvironmentVariableTarget.Process);

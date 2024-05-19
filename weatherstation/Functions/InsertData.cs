@@ -5,17 +5,19 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using weatherstation.Domain.DTOs;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Functions
 {
     public class InsertData
     {
         private readonly ILogger<InsertData> _logger;
+        private IWeatherLogic weatherLogic;
 
-        public InsertData(ILogger<InsertData> logger)
+        public InsertData(ILogger<InsertData> logger, IWeatherLogic weatherLogic)
         {
             _logger = logger;
+            this.weatherLogic = weatherLogic;
         }
 
         [Function("InsertData")]
@@ -26,7 +28,7 @@ namespace weatherstation.Functions
             JObject json = JsonConvert.DeserializeObject<JObject>(requestBody);
             try
             {
-                CurrentWeatherDto dto = await WeatherLogic.InsertWeatherData(json);
+                CurrentWeatherDto dto = await weatherLogic.InsertWeatherData(json);
                 res.StatusCode = System.Net.HttpStatusCode.OK;
                 res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { data = dto, msg = "Data inserted succesfully" }, Formatting.Indented)));
                 return res;
