@@ -14,8 +14,7 @@ namespace weatherstation.Application.Logic
     public class AccountLogic : IAccountLogic
     {
 
-        public AccountLogic()
-        {        }
+        public AccountLogic() {  }
 
         public async Task<string> LoginAccount(dynamic data)
         {
