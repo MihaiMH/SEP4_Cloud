@@ -1,6 +1,8 @@
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 
 #pragma warning disable AZFW0014 // Missing expected registration of ASP.NET Core Integration services
 var host = new HostBuilder()
@@ -9,6 +11,10 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
+        services.AddScoped<IAccountLogic, AccountLogic>();
+        services.AddScoped<INotificationLogic, NotificationLogic>();
+        services.AddScoped<IRecommendationLogic, RecommendationLogic>();
+        services.AddScoped<IWeatherLogic, WeatherLogic>();
     })
     .Build();
 #pragma warning restore AZFW0014 // Missing expected registration of ASP.NET Core Integration services

@@ -6,6 +6,13 @@ namespace weatherstation.Application.Logic
 {
     public class NotificationLogic : INotificationLogic
     {
+        private IAccountLogic accountLogic;
+        
+        public NotificationLogic(IAccountLogic accountLogic)
+        {
+            this.accountLogic = accountLogic;
+        }
+
         public async Task<List<NotificationDto>> GetNotificationsAsync()
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
@@ -31,7 +38,7 @@ namespace weatherstation.Application.Logic
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
-            var existingUser = await AccountLogic.GetUserByEmail(emailFromToken);
+            var existingUser = await accountLogic.GetUserByEmail(emailFromToken);
 
             string time = data["time"];
             string endpoint = data["endpoint"];
@@ -60,7 +67,7 @@ namespace weatherstation.Application.Logic
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
-            var existingUser = await AccountLogic.GetUserByEmail(emailFromToken);
+            var existingUser = await accountLogic.GetUserByEmail(emailFromToken);
 
             string query = Environment.GetEnvironmentVariable("SQLCON1Q13", EnvironmentVariableTarget.Process);
             query = query
