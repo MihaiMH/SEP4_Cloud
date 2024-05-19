@@ -5,12 +5,12 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using weatherstation.Domain.DTOs;
 using weatherstation.Domain.Model;
-using weatherstation.Logic;
+using weatherstation.Application.Logic;
 using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
 {
-    internal static class RecommendationLogic
+    public static class RecommendationLogic
     {
         public async static Task<string> GetRecommendation(dynamic data, Dictionary<string, string> token)
         {

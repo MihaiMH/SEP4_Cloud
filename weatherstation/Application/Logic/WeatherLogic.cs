@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using weatherstation.Domain.DTOs;
 using weatherstation.Utils;
 
-namespace weatherstation.Logic
+namespace weatherstation.Application.Logic
 {
-    internal class WeatherLogic
+    public class WeatherLogic
     {
         public WeatherLogic() {}
 

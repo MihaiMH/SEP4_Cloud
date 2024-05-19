@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace weatherstation.Utils
 {
-    internal class JsonResultData
+    public class JsonResultData
     {
         public string JsonData { get; set; }
     }

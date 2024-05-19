@@ -13,7 +13,7 @@ using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
 {
-    internal class AccountLogic 
+    public class AccountLogic 
     {
 
         public AccountLogic()
