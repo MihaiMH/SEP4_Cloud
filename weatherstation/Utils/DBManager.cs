@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace weatherstation.Utils
 {
-    internal class DBManager
+    public class DBManager
     {
         private string? ConnectionString;
 

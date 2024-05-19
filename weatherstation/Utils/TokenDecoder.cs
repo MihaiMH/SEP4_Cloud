@@ -11,10 +11,9 @@ using System.Threading.Tasks;
 
 namespace weatherstation.Utils
 {
-    internal class TokenDecoder
+    public class TokenDecoder
     {
-
-        public  Dictionary<string, string> Decode(string token)
+        public Dictionary<string, string> Decode(string token)
         {
             var TokenInfo = new Dictionary<string, string>();
 

@@ -5,7 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using weatherstation.Domain.DTOs;
-using weatherstation.Logic;
+using weatherstation.Application.Logic;
 
 namespace weatherstation.Functions
 {

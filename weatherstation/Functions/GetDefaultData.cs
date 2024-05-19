@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Text;
 using weatherstation.Domain.DTOs;
-using weatherstation.Logic;
+using weatherstation.Application.Logic;
 
 
 namespace weatherstation.Functions

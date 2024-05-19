@@ -9,7 +9,7 @@ using Org.BouncyCastle.Ocsp;
 using System.Text;
 using weatherstation.Application.Logic;
 using weatherstation.Domain.DTOs;
-using weatherstation.Logic;
+using weatherstation.Application.Logic;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions

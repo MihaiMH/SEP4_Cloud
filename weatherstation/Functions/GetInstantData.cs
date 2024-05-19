@@ -9,7 +9,7 @@ using weatherstation.Application.Logic;
 using weatherstation.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using weatherstation.Domain.DTOs;
-using weatherstation.Logic;
+using weatherstation.Application.Logic;
 
 namespace weatherstation.Functions
 {
