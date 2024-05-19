@@ -3,12 +3,9 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System;
-using System.IO;
 using System.Net;
 using System.Text;
-using System.Threading.Tasks;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions
@@ -16,10 +13,12 @@ namespace weatherstation.Functions
     public class GetRecommendation
     {
         private readonly ILogger<GetRecommendation> _logger;
+        private IRecommendationLogic recommendationLogic;
 
-        public GetRecommendation(ILogger<GetRecommendation> logger)
+        public GetRecommendation(ILogger<GetRecommendation> logger, IRecommendationLogic recommendationLogic)
         {
             _logger = logger;
+            this.recommendationLogic = recommendationLogic;
         }
 
         [Function("GetRecommendation")]
@@ -48,14 +47,14 @@ namespace weatherstation.Functions
                 string result = "";
                 if (token == null)
                 {
-                    result = await RecommendationLogic.GetRecommendation(json, null);
+                    result = await recommendationLogic.GetRecommendation(json, null);
                 }
                 else
                 {
                     // Decode the token
                     Dictionary<string, string> tokenData = decoder.Decode(token);
                     _logger.LogError(decoder.DictionaryToString(tokenData));
-                    result = await RecommendationLogic.GetRecommendation(json, tokenData);
+                    result = await recommendationLogic.GetRecommendation(json, tokenData);
                 }
 
                 var jsonResult = JsonConvert.SerializeObject(new { recommendation = result }, Formatting.Indented);

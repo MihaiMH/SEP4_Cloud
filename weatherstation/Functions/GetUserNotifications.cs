@@ -1,24 +1,23 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
-using weatherstation.Application.Logic;
 using weatherstation.Utils;
 using weatherstation.Domain.DTOs;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Functions
 {
     public class GetUserNotifications
     {
         private readonly ILogger<GetUserNotifications> _logger;
+        private INotificationLogic notificationLogic;
 
-        public GetUserNotifications(ILogger<GetUserNotifications> logger)
+        public GetUserNotifications(ILogger<GetUserNotifications> logger, INotificationLogic notificationLogic)
         {
             _logger = logger;
+            this.notificationLogic = notificationLogic;
         }
 
         [Function("GetUserNotifications")]
@@ -41,7 +40,7 @@ namespace weatherstation.Functions
                 else
                 {
                     Dictionary<string, string> tokenData = decoder.Decode(token);
-                    List<NotificationDto> results = await NotificationLogic.GetNotificationsAsync(tokenData);
+                    List<NotificationDto> results = await notificationLogic.GetNotificationsAsync(tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(results, Formatting.Indented)));

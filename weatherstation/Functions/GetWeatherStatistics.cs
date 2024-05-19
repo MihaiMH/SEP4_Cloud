@@ -1,15 +1,10 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Org.BouncyCastle.Ocsp;
 using System.Text;
-using weatherstation.Application.Logic;
-using weatherstation.Domain.DTOs;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions
@@ -17,10 +12,12 @@ namespace weatherstation.Functions
     public class GetWeatherStatistics
     {
         private readonly ILogger<GetWeatherStatistics> _logger;
+        private IWeatherLogic weatherLogic;
 
-        public GetWeatherStatistics(ILogger<GetWeatherStatistics> logger)
+        public GetWeatherStatistics(ILogger<GetWeatherStatistics> logger, IWeatherLogic weatherLogic)
         {
             _logger = logger;
+            this.weatherLogic = weatherLogic;
         }
 
         [Function("GetWeatherStatistics")]
@@ -53,9 +50,9 @@ namespace weatherstation.Functions
                 {
                     dynamic dto = period.ToLower() switch
                     {
-                        "week" => await WeatherLogic.GetStatistics("WEEK"),
-                        "month" => await WeatherLogic.GetStatistics("MONTH"),
-                        "year" => await WeatherLogic.GetStatistics("YEAR"),
+                        "week" => await weatherLogic.GetStatistics("WEEK"),
+                        "month" => await weatherLogic.GetStatistics("MONTH"),
+                        "year" => await weatherLogic.GetStatistics("YEAR"),
                         _ => throw new ArgumentException("Invalid period specified")
                     };
 

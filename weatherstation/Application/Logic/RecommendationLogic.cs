@@ -1,22 +1,25 @@
 ﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
 using weatherstation.Domain.DTOs;
 using weatherstation.Domain.Model;
-using weatherstation.Application.Logic;
 using weatherstation.Utils;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Application.Logic
 {
-    public static class RecommendationLogic
+    public class RecommendationLogic : IRecommendationLogic
     {
-        public async static Task<string> GetRecommendation(dynamic data, Dictionary<string, string> token)
+        private IWeatherLogic weatherLogic;
+
+        public RecommendationLogic(IWeatherLogic weatherLogic)
+        {
+            this.weatherLogic = weatherLogic;
+        }
+
+        public async Task<string> GetRecommendation(dynamic data, Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
 
-            List<CurrentWeatherDto> weather = await WeatherLogic.GetCurrentWeather();
+            List<CurrentWeatherDto> weather = await weatherLogic.GetCurrentWeather();
 
             if (weather.Count == 0)
             {

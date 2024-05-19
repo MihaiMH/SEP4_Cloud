@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Text;
 using weatherstation.Domain.DTOs;
-using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 
 
 namespace weatherstation.Functions
@@ -12,10 +12,12 @@ namespace weatherstation.Functions
     public class GetDefaultData
     {
         private readonly ILogger<GetDefaultData> _logger;
+        private IWeatherLogic weatherLogic;
 
-        public GetDefaultData(ILogger<GetDefaultData> logger)
+        public GetDefaultData(ILogger<GetDefaultData> logger, IWeatherLogic weatherLogic)
         {
             _logger = logger;
+            this.weatherLogic = weatherLogic;
         }
 
         [Function("GetDefaultData")]
@@ -25,7 +27,7 @@ namespace weatherstation.Functions
 
             try
             {
-                List<CurrentWeatherDto> dto = await WeatherLogic.GetAllWeather();
+                List<CurrentWeatherDto> dto = await weatherLogic.GetAllWeather();
                 res.StatusCode = System.Net.HttpStatusCode.OK;
                 res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(dto, Formatting.Indented)));
                 return res;

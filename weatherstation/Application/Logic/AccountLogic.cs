@@ -1,11 +1,9 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Reflection.PortableExecutable;
+﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
-using weatherstation.Domain.DTOs;
+using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.Model;
 using weatherstation.Utils;
 
@@ -13,13 +11,13 @@ using weatherstation.Utils;
 
 namespace weatherstation.Application.Logic
 {
-    public class AccountLogic 
+    public class AccountLogic : IAccountLogic
     {
 
         public AccountLogic()
         {        }
 
-        public static async Task<string> LoginAccount(dynamic data)
+        public async Task<string> LoginAccount(dynamic data)
         {
             string email = data["email"];
             string password = data["password"];
@@ -47,7 +45,7 @@ namespace weatherstation.Application.Logic
         }
 
 
-        public static async Task RegisterAccount(dynamic data)
+        public async Task RegisterAccount(dynamic data)
         {
             string firstname = data["firstname"];
             string lastname = data["lastname"];
@@ -104,7 +102,7 @@ namespace weatherstation.Application.Logic
 
 
 
-        public static async Task<User?> GetUserByEmail(string email)
+        public async Task<User?> GetUserByEmail(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
             string query = someQuery.Replace("[VAR_EMAIL]", email); 
@@ -157,7 +155,7 @@ namespace weatherstation.Application.Logic
             return regex.IsMatch(email);
         }
 
-        public static async Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token)
+        public async Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];

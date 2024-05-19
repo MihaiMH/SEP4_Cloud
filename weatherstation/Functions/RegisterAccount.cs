@@ -1,21 +1,22 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Azure.Functions.Worker.Http;
+﻿using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
-using weatherstation.Application.Logic;
-using weatherstation.Domain.Model;
 using System.Text;
+using weatherstation.Application.LogicInterfaces;
 
 namespace weatherstation.Functions
 {
     public class RegisterAccount
     {
         private readonly ILogger<RegisterAccount> _logger;
+        private IAccountLogic accountLogic;
 
-        public RegisterAccount(ILogger<RegisterAccount> logger)
-        {            _logger = logger;               }
+        public RegisterAccount(ILogger<RegisterAccount> logger, IAccountLogic accountLogic)
+        {            
+            _logger = logger;
+            this.accountLogic = accountLogic;
+        }
 
         [Function("RegisterAccount")]
         public async Task<HttpResponseData> RunAsync([HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData reqData)
@@ -26,7 +27,7 @@ namespace weatherstation.Functions
             {
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject<dynamic>(requestBody);
-                await AccountLogic.RegisterAccount(data);
+                await accountLogic.RegisterAccount(data);
 
                 res.StatusCode = System.Net.HttpStatusCode.OK;
                 res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have successfully created an account." }, Formatting.Indented)));
