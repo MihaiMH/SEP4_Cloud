@@ -1,15 +1,13 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using System.Text;
-using weatherstation.Application.Logic;
 using weatherstation.Utils;
 using Microsoft.Azure.Functions.Worker.Http;
 using weatherstation.Domain.DTOs;
 using weatherstation.Application.LogicInterfaces;
+
 namespace weatherstation.Functions
 {
     public class GetInstantData
@@ -22,6 +20,7 @@ namespace weatherstation.Functions
             _logger = logger;
             this.weatherLogic = weatherLogic;
         }
+
         [Function("GetInstantData")]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData req)
         {
