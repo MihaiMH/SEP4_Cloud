@@ -19,7 +19,7 @@ env:
   DOTNET_VERSION: '8.0.x'                   # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
 
 jobs:
-  build:
+  build-test:
     runs-on: windows-latest
     name: Build
 
@@ -33,34 +33,19 @@ jobs:
           dotnet-version: ${{ env.DOTNET_VERSION }}
 
       - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet restore weatherstation.sln
+        working-directory: ./weatherstation
 
       - name: Build
-        run: dotnet build --configuration Release
-
-  test:
-    needs: build
-    runs-on: windows-latest
-    name: Test
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v3
-        with:
-          dotnet-version: 6.0.x
-
-      - name: Restore dependencies
-        run: dotnet restore
+        run: dotnet build weatherstation.sln --configuration Release --no-restore
+        working-directory: ./weatherstation
 
       - name: Test
-        run: dotnet test --configuration Release
-    
+        run: dotnet test weatherstation.sln --configuration Release --no-build --verbosity normal
+        working-directory: ./weatherstation   
 
   build-and-deploy:
-    needs: test
+    needs: build-test
     runs-on: windows-latest
     environment: dev
     steps:
