@@ -15,6 +15,9 @@ namespace weatherstation.Application.Logic
             this.dbManager = dbManager;
         }
 
+        public NotificationLogic() { 
+        }
+
         public async Task<List<NotificationDto>> GetNotificationsAsync()
         {
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q10", EnvironmentVariableTarget.Process);

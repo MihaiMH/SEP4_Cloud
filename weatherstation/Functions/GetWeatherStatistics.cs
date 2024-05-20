@@ -27,7 +27,7 @@ namespace weatherstation.Functions
             try
             {
 
-                TokenDecoder decoder = new TokenDecoder();
+                Token decoder = new Token();
                 string token = decoder.Extract(reqData);
 
                 string requestBody = await new StreamReader(reqData.Body).ReadToEndAsync();
@@ -39,7 +39,7 @@ namespace weatherstation.Functions
                 }
 
                 string result = "";
-                if (token == null)
+                if (!decoder.IsTokenValid(token))
                 {
                     res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
                     var msg = JsonConvert.SerializeObject(new { msg = "Unauthorized" }, Formatting.Indented);

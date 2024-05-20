@@ -14,6 +14,9 @@ namespace weatherstation.Application.Logic
             this.dbManager = dbManager;
             this.socketManager = socketManager;
         }
+        public WeatherLogic()
+        {
+        }
 
         public async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
         {
