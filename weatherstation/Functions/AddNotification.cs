@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
-using weatherstation.Application.LogicInterfaces;
+using weatherstation.Application.Logic;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions
@@ -12,12 +12,10 @@ namespace weatherstation.Functions
     public class AddNotification
     {
         private readonly ILogger<AddNotification> _logger;
-        private INotificationLogic notificationLogic;
 
-        public AddNotification(ILogger<AddNotification> logger, INotificationLogic notificationLogic)
+        public AddNotification(ILogger<AddNotification> logger)
         {
             _logger = logger;
-            this.notificationLogic = notificationLogic;
         }
 
         [Function("AddNotification")]
@@ -27,7 +25,7 @@ namespace weatherstation.Functions
 
             try
             {
-                TokenDecoder decoder = new TokenDecoder();
+                Token decoder = new Token();
                 string token = decoder.Extract(req);
 
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
@@ -39,7 +37,7 @@ namespace weatherstation.Functions
                 }
 
                 string result = "";
-                if (token == null)
+                if (decoder.IsTokenValid(token))
                 {
                     res.StatusCode = System.Net.HttpStatusCode.Unauthorized;
                     var msg = JsonConvert.SerializeObject(new { msg = "Login in order to add notifications to account." }, Formatting.Indented);
@@ -49,7 +47,8 @@ namespace weatherstation.Functions
                 else
                 {
                     Dictionary<string, string> tokenData = decoder.Decode(token);
-                    await notificationLogic.AddNotificationAsync(json, tokenData);
+                    NotificationLogic logic = new NotificationLogic();
+                    await logic.AddNotificationAsync(json, tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have added a notification to your account successfully." }, Formatting.Indented)));

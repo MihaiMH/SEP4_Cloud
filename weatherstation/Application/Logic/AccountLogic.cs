@@ -1,5 +1,6 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.IdentityModel.Tokens;
@@ -14,10 +15,11 @@ namespace weatherstation.Application.Logic
     public class AccountLogic : IAccountLogic
     {
         private readonly IDBManager dbManager;
-
+        private readonly string _signingKey;
         public AccountLogic(IDBManager dbManager) 
         { 
             this.dbManager = dbManager;
+            _signingKey = Environment.GetEnvironmentVariable("JwtSettings:SigningKey", EnvironmentVariableTarget.Process);
         }
 
         public async Task<string> LoginAccount(dynamic data)
@@ -41,7 +43,7 @@ namespace weatherstation.Application.Logic
             }
 
             // Generate JWT token
-            string jwtToken = GenerateJwtToken(someUser);
+            string jwtToken = Token.GenerateJwtToken(someUser);
 
             // Return the JWT token
             return jwtToken;
@@ -122,25 +124,9 @@ namespace weatherstation.Application.Logic
             return result.FirstOrDefault();
         }
 
-        private string GenerateJwtToken(User user)
-        {
-            var tokenHandler = new JwtSecurityTokenHandler();
-            var key = Encoding.ASCII.GetBytes("your_secret_key_here_123456789012345678901234567890"); // Change this to your secret key
-            var tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new Claim[]
-                {
-                    new Claim(ClaimTypes.Name, user.Id.ToString()),
-                    new Claim(ClaimTypes.Email, user.Email),
-                    new Claim(ClaimTypes.GivenName, user.FirstName),
-                    new Claim(ClaimTypes.Surname, user.LastName),
-                }),
-                Expires = DateTime.UtcNow.AddHours(1), // Token expires in 1 hour, change this as needed
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256)
-            };
-            var token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
+
+
+
 
         private bool IsValidEmail(string email)
         {
@@ -249,7 +235,7 @@ namespace weatherstation.Application.Logic
 
             await dbManager.InsertData(queryTemplate);
 
-            string newJwtToken = GenerateJwtToken(existingUser);
+            string newJwtToken = Token.GenerateJwtToken(existingUser);
 
             return newJwtToken;
         }

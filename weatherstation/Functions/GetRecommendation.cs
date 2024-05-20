@@ -28,7 +28,7 @@ namespace weatherstation.Functions
 
             try
             {
-                TokenDecoder decoder = new TokenDecoder();
+                Token decoder = new Token();
 
                 // Check if the Authorization header is present
                 string token = decoder.Extract(reqData);
@@ -45,7 +45,7 @@ namespace weatherstation.Functions
                 }
 
                 string result = "";
-                if (token == null)
+                if (!decoder.IsTokenValid(token))
                 {
                     result = await recommendationLogic.GetRecommendation(json, null);
                 }
