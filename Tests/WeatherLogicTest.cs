@@ -2,7 +2,6 @@
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using System.Data;
 using weatherstation.Application.Logic;
 using weatherstation.Application.LogicInterfaces;
 using weatherstation.Domain.DTOs;
@@ -29,8 +28,6 @@ namespace Tests
             // Arrange
             string jsonData = "{\"temperature\": 25, \"humidity\": 60, \"light\": 30}";
             dynamic data = JObject.Parse(jsonData);
-
-            Environment.SetEnvironmentVariable("SQLCON1Q2", "INSERT INTO WeatherData (WeatherState, Temperature, Light, Humidity, DateTime) VALUES ('[VAR_WEATHERSTATE]', [VAR_TEMPERATURE], [VAR_LIGHT], [VAR_HUMIDITY], '[VAR_DATETIME]');");
 
             _mockDbManager.Setup(db => db.InsertData(It.IsAny<string>())).Returns(Task.CompletedTask);
 
