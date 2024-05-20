@@ -3,7 +3,7 @@ using System.Text;
 
 namespace weatherstation.Utils
 {
-    public class SocketManager
+    public class SocketManager : ISocketManager
     {
         private readonly string _serverAddress;
         private readonly int _serverPort;

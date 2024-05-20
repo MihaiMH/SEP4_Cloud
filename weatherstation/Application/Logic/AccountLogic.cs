@@ -162,23 +162,19 @@ namespace weatherstation.Application.Logic
             string email = data["email"];
             string firstname = data["firstname"];
             string lastname = data["lastname"];
-            string password = data["password"];
+            string currentPassword = data["currentPassword"];
+            string newPassword = data["newPassword"];
             string preferences = data["preferences"];
             bool onNotifications = data["onNotifications"];
 
+            if (string.IsNullOrEmpty(email))
+            {
+                throw new ArgumentException("Email can not be empty.");
+            }
+
             var existingUser = await GetUserByEmail(emailFromToken);
 
-            if (existingUser == null)
-            {
-                throw new ArgumentException("User not found.");
-            }
-
-            if (!string.IsNullOrEmpty(password) && password.Length <= 6)
-            {
-                throw new ArgumentException("Password must be more than 6 characters.");
-            }
-
-            if (!string.IsNullOrEmpty(email))
+            if (!email.Equals(emailFromToken))
             {
                 if (IsValidEmail(email))
                 {
@@ -200,17 +196,29 @@ namespace weatherstation.Application.Logic
             {
                 existingUser.Email = emailFromToken;
             }
-
+            
             existingUser.FirstName = firstname;
             existingUser.LastName = lastname;
             existingUser.Preferences = preferences;
             existingUser.OnNotifications = onNotifications;
 
-            if (!string.IsNullOrEmpty(password))
+            if (!string.IsNullOrEmpty(newPassword))
             {
-                string salt = BCrypt.Net.BCrypt.GenerateSalt();
-                string hashedPassword = BCrypt.Net.BCrypt.HashPassword(password, salt);
-                existingUser.Password = hashedPassword;
+                if (newPassword.Length <= 6)
+                {
+                    throw new ArgumentException("Password must be more than 6 characters.");
+                }
+
+                if (BCrypt.Net.BCrypt.Verify(currentPassword, existingUser.Password))
+                {
+                    string salt = BCrypt.Net.BCrypt.GenerateSalt();
+                    string hashedPassword = BCrypt.Net.BCrypt.HashPassword(newPassword, salt);
+                    existingUser.Password = hashedPassword;
+                }
+                else
+                {
+                    throw new ArgumentException("Wrong password.");
+                }
             }
 
             string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q9", EnvironmentVariableTarget.Process);
