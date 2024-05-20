@@ -9,16 +9,16 @@ namespace weatherstation.Application.Logic
     public class RecommendationLogic : IRecommendationLogic
     {
         private IWeatherLogic weatherLogic;
+        private readonly IDBManager dbManager;
 
-        public RecommendationLogic(IWeatherLogic weatherLogic)
+        public RecommendationLogic(IWeatherLogic weatherLogic, IDBManager dbManager)
         {
             this.weatherLogic = weatherLogic;
+            this.dbManager = dbManager;
         }
 
         public async Task<string> GetRecommendation(dynamic data, Dictionary<string, string> token)
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-
             List<CurrentWeatherDto> weather = await weatherLogic.GetCurrentWeather();
 
             if (weather.Count == 0)
@@ -35,7 +35,7 @@ namespace weatherstation.Application.Logic
 
                 sqlCon = sqlCon.Replace("[ID]", token["unique_name"]);
 
-                List<Preference> preference = await db.ExecuteQuery(sqlCon,
+                List<Preference> preference = await dbManager.ExecuteQuery(sqlCon,
                    async (reader) => await Task.FromResult(new Preference
                    {
                        Text = reader.GetString("Preferences")

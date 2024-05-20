@@ -129,7 +129,7 @@ namespace Tests
             Assert.Equal("Night", result[1].WeatherState);
         }
 
-        /*[Fact]
+        [Fact]
         public async Task GetInstantWeather_ShouldReturnCurrentWeatherDto()
         {
             // Arrange
@@ -165,57 +165,6 @@ namespace Tests
             Assert.Equal(weatherData.Humidity, result.Humidity);
             Assert.Equal(weatherData.Light, result.Light);
             Assert.Equal(weatherData.Time, result.Time);
-        }*/
-
-        /*[Fact]
-        public async Task GetStatistics_ShouldReturnStatisticsData()
-        {
-            // Arrange
-            string interval = "week";
-
-            string q1 = "SELECT JSON_OBJECT('sunnyDays', COUNT(DISTINCT CASE WHEN WeatherState = 'Sunny' THEN DATE(DateTime) END), 'averageLight', CAST(AVG(Light) AS UNSIGNED), 'averageTemperature', CAST(AVG(Temperature) AS UNSIGNED), 'averageHumidity', CAST(AVG(Humidity) AS UNSIGNED)) AS summary FROM WeatherData WHERE DateTime >= NOW() - INTERVAL 1 [INTERVAL]";
-            string q2 = "SELECT JSON_ARRAYAGG(JSON_OBJECT('date', dateFormatted, 'minTemperature', minTemperature, 'maxTemperature', maxTemperature)) AS temperatureGraph FROM (SELECT DATE(DateTime) AS dateFormatted, CAST(MIN(Temperature) AS UNSIGNED) AS minTemperature, CAST(MAX(Temperature) AS UNSIGNED) AS maxTemperature FROM WeatherData WHERE DateTime >= NOW() - INTERVAL 1 [INTERVAL] GROUP BY DATE(DateTime)) AS dailyTemps";
-            string q3 = "SELECT JSON_ARRAYAGG(JSON_OBJECT('date', dateFormatted, 'humidity', avgHumidity)) AS averageHumidity FROM (SELECT DATE(DateTime) AS dateFormatted, CAST(AVG(Humidity) AS UNSIGNED) AS avgHumidity FROM WeatherData WHERE DateTime >= NOW() - INTERVAL 1 [INTERVAL] GROUP BY DATE(DateTime)) AS dailyHumidity";
-            string q4 = "SELECT JSON_OBJECT('littleclody', SUM(WeatherState LIKE '%Little Cloudy%'), 'cloudy', SUM(WeatherState LIKE '%Cloudy%'), 'sunny', SUM(WeatherState LIKE '%Sunny%')) AS weatherStateSummary FROM (SELECT DISTINCT DATE(DateTime) AS Day, WeatherState FROM WeatherData WHERE DateTime >= NOW() - INTERVAL 1 [INTERVAL]) AS UniqueDays";
-
-            q1 = q1.Replace("[INTERVAL]", interval);
-            q2 = q2.Replace("[INTERVAL]", interval);
-            q3 = q3.Replace("[INTERVAL]", interval);
-            q4 = q4.Replace("[INTERVAL]", interval);
-
-            string summaryJson = "{\"sunnyDays\": 4, \"averageLight\": 53, \"averageHumidity\": 32, \"averageTemperature\": 21}";
-            string temperatureGraphJson = "[{\"date\": \"2024-05-14\", \"maxTemperature\": 26, \"minTemperature\": 26}, {\"date\": \"2024-05-15\", \"maxTemperature\": 30, \"minTemperature\": 27}, {\"date\": \"2024-05-16\", \"maxTemperature\": 100, \"minTemperature\": 1}, {\"date\": \"2024-05-17\", \"maxTemperature\": 24, \"minTemperature\": 3}, {\"date\": \"2024-05-18\", \"maxTemperature\": 25, \"minTemperature\": 24}, {\"date\": \"2024-05-19\", \"maxTemperature\": 30, \"minTemperature\": 3}]";
-            string averageHumidityJson = "[{\"date\": \"2024-05-14\", \"humidity\": 33}, {\"date\": \"2024-05-15\", \"humidity\": 39}, {\"date\": \"2024-05-16\", \"humidity\": 24}, {\"date\": \"2024-05-17\", \"humidity\": 40}, {\"date\": \"2024-05-18\", \"humidity\": 47}, {\"date\": \"2024-05-19\", \"humidity\": 25}]";
-            string weatherStateSummaryJson = "{\"sunny\": 4, \"cloudy\": 8, \"littleclody\": 4}";
-
-            // Mock the ExecuteJsonQuery method to return the JSON string
-            _mockDbManager.Setup(db => db.ExecuteQuery(It.Is<string>(q => q == q1), It.IsAny<Func<IDataReader, Task<JsonResultData>>>()))
-            .ReturnsAsync(new List<JsonResultData> { new JsonResultData { JsonData = summaryJson } });
-
-            _mockDbManager.Setup(db => db.ExecuteQuery(It.Is<string>(q => q == q2), It.IsAny<Func<IDataReader, Task<JsonResultData>>>()))
-                .ReturnsAsync(new List<JsonResultData> { new JsonResultData { JsonData = temperatureGraphJson } });
-
-            _mockDbManager.Setup(db => db.ExecuteQuery(It.Is<string>(q => q == q3), It.IsAny<Func<IDataReader, Task<JsonResultData>>>()))
-                .ReturnsAsync(new List<JsonResultData> { new JsonResultData { JsonData = averageHumidityJson } });
-
-            _mockDbManager.Setup(db => db.ExecuteQuery(It.Is<string>(q => q == q4), It.IsAny<Func<IDataReader, Task<JsonResultData>>>()))
-                .ReturnsAsync(new List<JsonResultData> { new JsonResultData { JsonData = weatherStateSummaryJson } });
-
-            // Act
-            var result = await _weatherLogic.GetStatistics(interval);
-
-            // Assert
-            Assert.NotNull(result);
-
-            var expectedSummary = JsonConvert.DeserializeObject<dynamic>(summaryJson);
-            var expectedTemperatureGraph = JsonConvert.DeserializeObject<List<dynamic>>(temperatureGraphJson);
-            var expectedAverageHumidity = JsonConvert.DeserializeObject<List<dynamic>>(averageHumidityJson);
-            var expectedWeatherStateSummary = JsonConvert.DeserializeObject<dynamic>(weatherStateSummaryJson);
-
-            Assert.Equal(expectedSummary, result.summary);
-            Assert.Equal(expectedTemperatureGraph, result.temperatureGraph);
-            Assert.Equal(expectedAverageHumidity, result.averageHumidity);
-            Assert.Equal(expectedWeatherStateSummary, result.weatherStateSummary);
-        }*/
+        }
     }
 }

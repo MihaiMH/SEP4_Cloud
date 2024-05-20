@@ -126,10 +126,10 @@ namespace weatherstation.Application.Logic
             q4 = q4.Replace("[INTERVAL]", interval);
 
 
-            var summary =  ExecuteJsonQuery(q1);
-            var temperatureGraph =  ExecuteJsonQuery(q2);
-            var averageHumidity =  ExecuteJsonQuery(q3);
-            var weatherStateSummary =  ExecuteJsonQuery(q4);
+            var summary = ExecuteJsonQuery(q1);
+            var temperatureGraph = ExecuteJsonQuery(q2);
+            var averageHumidity = ExecuteJsonQuery(q3);
+            var weatherStateSummary = ExecuteJsonQuery(q4);
 
             // Await all tasks to complete
             await Task.WhenAll(summary, temperatureGraph, averageHumidity, weatherStateSummary);

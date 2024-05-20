@@ -7,19 +7,19 @@ namespace weatherstation.Application.Logic
     public class NotificationLogic : INotificationLogic
     {
         private IAccountLogic accountLogic;
+        private readonly IDBManager dbManager;
         
-        public NotificationLogic(IAccountLogic accountLogic)
+        public NotificationLogic(IAccountLogic accountLogic, IDBManager dbManager)
         {
             this.accountLogic = accountLogic;
+            this.dbManager = dbManager;
         }
 
         public async Task<List<NotificationDto>> GetNotificationsAsync()
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q10", EnvironmentVariableTarget.Process);
 
-            List<NotificationDto> results = await db.ExecuteQuery(
+            List<NotificationDto> results = await dbManager.ExecuteQuery(
                 query,
                 async (reader) => await Task.FromResult(new NotificationDto
                 {
@@ -35,7 +35,6 @@ namespace weatherstation.Application.Logic
 
         public async Task AddNotificationAsync(dynamic data, Dictionary<string, string> token)
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
             var existingUser = await accountLogic.GetUserByEmail(emailFromToken);
@@ -50,7 +49,7 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_TIME]", time)
                 .Replace("[VAR_USERID]", existingUser.Id.ToString());
 
-            await db.InsertData(query);
+            await dbManager.InsertData(query);
 
             string newQuery = Environment.GetEnvironmentVariable("SQLCON1Q12", EnvironmentVariableTarget.Process);
             newQuery = newQuery
@@ -59,12 +58,11 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_P256DH]", p256dh)
                 .Replace("[VAR_USERID]", existingUser.Id.ToString());
 
-            await db.InsertData(newQuery);
+            await dbManager.InsertData(newQuery);
         }
 
         public async Task<List<NotificationDto>> GetNotificationsAsync(Dictionary<string, string> token)
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
             var existingUser = await accountLogic.GetUserByEmail(emailFromToken);
@@ -73,7 +71,7 @@ namespace weatherstation.Application.Logic
             query = query
                 .Replace("[VAR_USERID]", existingUser.Id.ToString());
 
-            List<NotificationDto> result = await db.ExecuteQuery(
+            List<NotificationDto> result = await dbManager.ExecuteQuery(
                 query,
                 async (reader) => await Task.FromResult(new NotificationDto
                 {
