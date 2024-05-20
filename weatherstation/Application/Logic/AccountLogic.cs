@@ -16,6 +16,7 @@ namespace weatherstation.Application.Logic
     {
         private readonly IDBManager dbManager;
         private readonly string _signingKey;
+
         public AccountLogic(IDBManager dbManager) 
         { 
             this.dbManager = dbManager;
@@ -48,7 +49,6 @@ namespace weatherstation.Application.Logic
             // Return the JWT token
             return jwtToken;
         }
-
 
         public async Task RegisterAccount(dynamic data)
         {
@@ -101,8 +101,6 @@ namespace weatherstation.Application.Logic
             return result.FirstOrDefault() == 0;
         }
 
-
-
         public async Task<User?> GetUserByEmail(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
@@ -123,10 +121,6 @@ namespace weatherstation.Application.Logic
 
             return result.FirstOrDefault();
         }
-
-
-
-
 
         private bool IsValidEmail(string email)
         {

@@ -5,6 +5,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Text;
 using weatherstation.Application.Logic;
+using weatherstation.Application.LogicInterfaces;
 using weatherstation.Utils;
 
 namespace weatherstation.Functions
@@ -12,10 +13,12 @@ namespace weatherstation.Functions
     public class AddNotification
     {
         private readonly ILogger<AddNotification> _logger;
+        private INotificationLogic notificationLogic;
 
-        public AddNotification(ILogger<AddNotification> logger)
+        public AddNotification(ILogger<AddNotification> logger, INotificationLogic notificationLogic)
         {
             _logger = logger;
+            this.notificationLogic = notificationLogic;
         }
 
         [Function("AddNotification")]
@@ -47,8 +50,7 @@ namespace weatherstation.Functions
                 else
                 {
                     Dictionary<string, string> tokenData = decoder.Decode(token);
-                    NotificationLogic logic = new NotificationLogic();
-                    await logic.AddNotificationAsync(json, tokenData);
+                    await notificationLogic.AddNotificationAsync(json, tokenData);
 
                     res.StatusCode = System.Net.HttpStatusCode.OK;
                     res.Body = new MemoryStream(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(new { msg = "You have added a notification to your account successfully." }, Formatting.Indented)));

@@ -22,7 +22,7 @@ namespace weatherstation.Functions
         }
 
         [Function("GetRecommendation")]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData reqData)
+        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get")] HttpRequestData reqData)
         {
             var response = reqData.CreateResponse();
 
