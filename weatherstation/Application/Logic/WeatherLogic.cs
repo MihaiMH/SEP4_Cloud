@@ -7,10 +7,12 @@ namespace weatherstation.Application.Logic
     public class WeatherLogic : IWeatherLogic
     {
         private readonly IDBManager dbManager;
+        private readonly ISocketManager socketManager;
 
-        public WeatherLogic(IDBManager dbManager) 
+        public WeatherLogic(IDBManager dbManager, ISocketManager socketManager) 
         {
             this.dbManager = dbManager;
+            this.socketManager = socketManager;
         }
 
         public async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
@@ -105,8 +107,7 @@ namespace weatherstation.Application.Logic
             string? SOCKET_IP = Environment.GetEnvironmentVariable("SOCKET_IP", EnvironmentVariableTarget.Process);
             string? SOCKET_PORT = Environment.GetEnvironmentVariable("SOCKET_PORT", EnvironmentVariableTarget.Process);
             string? MESSAGE2IOT = Environment.GetEnvironmentVariable("MESSAGE2IOT", EnvironmentVariableTarget.Process);
-            SocketManager socket = new SocketManager(SOCKET_IP, Int32.Parse(SOCKET_PORT));
-            await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
+            await socketManager.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
             List<CurrentWeatherDto> list = await GetCurrentWeather();
             return list[0];
         }
