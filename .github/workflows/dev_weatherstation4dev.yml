@@ -1,4 +1,4 @@
-name: Deploy DotNet project to Azure Function App
+name: Deploy and Test DotNet project to Azure Function App
 
 on:
   push:
@@ -19,7 +19,34 @@ env:
   DOTNET_VERSION: '8.0.x'                   # set this to the dotnet version to use (e.g. '2.1.x', '3.1.x', '5.0.x')
 
 jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+    - name: 'Checkout GitHub Actions'
+      uses: actions/checkout@v3
+
+    - name: Setup .NET ${{ env.DOTNET_VERSION }} Environment
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
+    - name: Setup NuGet
+      uses: NuGet/setup-nuget@v1.0.5
+
+    - name: Change directory to solution folder
+      run: cd weatherstation
+
+    - name: Restore dependencies
+      run: dotnet restore weatherstation.sln
+
+    - name: Build
+      run: dotnet build weatherstation.sln --configuration Release --no-restore
+
+    - name: Test
+      run: dotnet test weatherstation.sln --configuration Release --no-build --verbosity normal
+
   build-and-deploy:
+    needs: test
     runs-on: windows-latest
     environment: dev
     steps:
