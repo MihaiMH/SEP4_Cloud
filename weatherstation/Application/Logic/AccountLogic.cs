@@ -154,6 +154,26 @@ namespace weatherstation.Application.Logic
             return regex.IsMatch(email);
         }
 
+        public async Task SetPreferences(dynamic data, Dictionary<string, string> token)
+        {
+            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
+            string emailFromToken = token["email"];
+
+            string preferences = data["preferences"];
+
+            var existingUser = await GetUserByEmail(emailFromToken);
+
+            existingUser.Preferences = preferences;
+
+            string queryTemplate = Environment.GetEnvironmentVariable("SQLCON1Q14", EnvironmentVariableTarget.Process);
+
+            queryTemplate = queryTemplate
+                .Replace("[VAR_USERID]", existingUser.Id.ToString())
+                .Replace("[VAR_PREFERENCES]", existingUser.Preferences);
+
+            await db.InsertData(queryTemplate);
+        }
+
         public async Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token)
         {
             DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
@@ -217,7 +237,7 @@ namespace weatherstation.Application.Logic
                 }
                 else
                 {
-                    throw new ArgumentException("Wrong password.");
+                    throw new ArgumentException("Wrong password current password.");
                 }
             }
 
