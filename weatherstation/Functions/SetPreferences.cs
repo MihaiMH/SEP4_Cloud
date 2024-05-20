@@ -1,13 +1,9 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
-using Org.BouncyCastle.Ocsp;
 using System.Text;
-using weatherstation.Application.Logic;
 using weatherstation.Utils;
 using weatherstation.Application.LogicInterfaces;
 
