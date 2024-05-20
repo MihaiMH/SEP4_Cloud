@@ -33,14 +33,14 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5
 
-    - name: Change directory to solution folder
-      run: cd weatherstation
-
-    - name: Build
-      run: dotnet build weatherstation.sln --configuration Release --no-restore
+    - name: 'Resolve Project Dependencies Using Dotnet'
+      shell: pwsh
+      run: |
+        dotnet build --configuration Release --output ./output
+        popd
 
     - name: Test
-      run: dotnet test weatherstation.sln --configuration Release --no-build --verbosity normal
+      run: dotnet test --configuration Release
 
   build-and-deploy:
     needs: test
