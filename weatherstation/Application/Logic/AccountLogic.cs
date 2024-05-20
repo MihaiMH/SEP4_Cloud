@@ -13,8 +13,12 @@ namespace weatherstation.Application.Logic
 {
     public class AccountLogic : IAccountLogic
     {
+        private readonly IDBManager dbManager;
 
-        public AccountLogic() {  }
+        public AccountLogic(IDBManager dbManager) 
+        { 
+            this.dbManager = dbManager;
+        }
 
         public async Task<string> LoginAccount(dynamic data)
         {
@@ -83,19 +87,15 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_EMAIL]", email)
                 .Replace("[VAR_ONNOTIFICATIONS]", onNotifications ? "true" : "false");
 
-
-
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            await db.InsertData(query);
+            await dbManager.InsertData(query);
         }
 
-        private static async Task<bool> IsEmailUnique(string email)
+        private async Task<bool> IsEmailUnique(string email)
         {
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q7", EnvironmentVariableTarget.Process);
             string query = someQuery.Replace("[VAR_EMAIL]", email);
 
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var result = await db.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
+            var result = await dbManager.ExecuteQuery(query, async (reader) => await Task.FromResult(reader.GetInt32(0)));
             return result.FirstOrDefault() == 0;
         }
 
@@ -106,9 +106,7 @@ namespace weatherstation.Application.Logic
             string someQuery = Environment.GetEnvironmentVariable("SQLCON1Q8", EnvironmentVariableTarget.Process);
             string query = someQuery.Replace("[VAR_EMAIL]", email); 
 
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-
-            var result = await db.ExecuteQuery(
+            var result = await dbManager.ExecuteQuery(
                 query, 
                 async (reader) => await Task.FromResult(new User
                 {
@@ -124,7 +122,7 @@ namespace weatherstation.Application.Logic
             return result.FirstOrDefault();
         }
 
-        private static string GenerateJwtToken(User user)
+        private string GenerateJwtToken(User user)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
             var key = Encoding.ASCII.GetBytes("your_secret_key_here_123456789012345678901234567890"); // Change this to your secret key
@@ -144,9 +142,8 @@ namespace weatherstation.Application.Logic
             return tokenHandler.WriteToken(token);
         }
 
-        private static bool IsValidEmail(string email)
+        private bool IsValidEmail(string email)
         {
-
             string emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
 
             Regex regex = new Regex(emailPattern);
@@ -156,7 +153,6 @@ namespace weatherstation.Application.Logic
 
         public async Task SetPreferences(dynamic data, Dictionary<string, string> token)
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
             string preferences = data["preferences"];
@@ -171,12 +167,11 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_USERID]", existingUser.Id.ToString())
                 .Replace("[VAR_PREFERENCES]", existingUser.Preferences);
 
-            await db.InsertData(queryTemplate);
+            await dbManager.InsertData(queryTemplate);
         }
 
         public async Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token)
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
             string emailFromToken = token["email"];
 
             string email = data["email"];
@@ -252,7 +247,7 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_EMAIL]", existingUser.Email)
                 .Replace("[VAR_ONNOTIFICATIONS]", existingUser.OnNotifications ? "true" : "false");
 
-            await db.InsertData(queryTemplate);
+            await dbManager.InsertData(queryTemplate);
 
             string newJwtToken = GenerateJwtToken(existingUser);
 
