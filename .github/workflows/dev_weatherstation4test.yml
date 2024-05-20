@@ -23,11 +23,14 @@ jobs:
     - name: Setup NuGet
       uses: NuGet/setup-nuget@v1.0.5
 
+    - name: Change directory to solution folder
+      run: cd weatherstation
+
     - name: Restore dependencies
-      run: dotnet restore
+      run: dotnet restore weatherstation.sln
 
     - name: Build
-      run: dotnet build --configuration Release --no-restore
+      run: dotnet build weatherstation.sln --configuration Release --no-restore
 
     - name: Test
-      run: dotnet test --configuration Release --no-build --verbosity normal
+      run: dotnet test weatherstation.sln --configuration Release --no-build --verbosity normal
