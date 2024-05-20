@@ -2,7 +2,7 @@
 
 namespace weatherstation.Utils
 {
-    public class DBManager
+    public class DBManager : IDBManager
     {
         private string? ConnectionString;
 

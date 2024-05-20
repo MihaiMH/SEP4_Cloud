@@ -8,5 +8,6 @@ namespace weatherstation.Application.LogicInterfaces
         Task RegisterAccount(dynamic data);
         Task<User?> GetUserByEmail(string email);
         Task<string> UpdateAccount(dynamic data, Dictionary<string, string> token);
+        Task SetPreferences(dynamic data, Dictionary<string, string> token);
     }
 }

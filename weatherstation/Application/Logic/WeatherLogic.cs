@@ -6,7 +6,12 @@ namespace weatherstation.Application.Logic
 {
     public class WeatherLogic : IWeatherLogic
     {
-        public WeatherLogic() {}
+        private readonly IDBManager dbManager;
+
+        public WeatherLogic(IDBManager dbManager) 
+        {
+            this.dbManager = dbManager;
+        }
 
         public async Task<CurrentWeatherDto> InsertWeatherData(dynamic data)
         {
@@ -42,6 +47,8 @@ namespace weatherstation.Application.Logic
                 .Replace("[VAR_HUMIDITY]", humidity.ToString())
                 .Replace("[VAR_DATETIME]", time);
 
+            await dbManager.InsertData(query);
+
             CurrentWeatherDto dto = new CurrentWeatherDto
             {
                 Id = -5,
@@ -51,20 +58,15 @@ namespace weatherstation.Application.Logic
                 Light = light,
                 Time = DateTime.ParseExact(time, "yyyy-MM-dd HH:mm:ss", null, System.Globalization.DateTimeStyles.None)
             };
-            Console.WriteLine(query);
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            await db.InsertData(query);
 
             return dto;
         }
 
         public async Task<List<CurrentWeatherDto>> GetCurrentWeather()
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q5", EnvironmentVariableTarget.Process);
 
-            List <CurrentWeatherDto> results = await db.ExecuteQuery(
+            List<CurrentWeatherDto> results = await dbManager.ExecuteQuery(
                 query,
                 async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
@@ -81,11 +83,9 @@ namespace weatherstation.Application.Logic
 
         public async Task<List<CurrentWeatherDto>> GetAllWeather()
         {
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-
             string? query = Environment.GetEnvironmentVariable("SQLCON1Q1", EnvironmentVariableTarget.Process);
 
-            List<CurrentWeatherDto> results = await db.ExecuteQuery(
+            List<CurrentWeatherDto> results = await dbManager.ExecuteQuery(
                 query,
                 async (reader) => await Task.FromResult(new CurrentWeatherDto
                 {
@@ -98,7 +98,7 @@ namespace weatherstation.Application.Logic
                 }));
 
             return results;
-        }
+        } 
 
         public async Task<CurrentWeatherDto?> GetInstantWeather()
         {
@@ -108,7 +108,6 @@ namespace weatherstation.Application.Logic
             SocketManager socket = new SocketManager(SOCKET_IP, Int32.Parse(SOCKET_PORT));
             await socket.SendMessageAndWaitForResponseAsync(MESSAGE2IOT);
             List<CurrentWeatherDto> list = await GetCurrentWeather();
-            /*CurrentWeatherDto? dto = JsonConvert.DeserializeObject<CurrentWeatherDto>(response);*/
             return list[0];
         }
 
@@ -149,11 +148,9 @@ namespace weatherstation.Application.Logic
 
         }
 
-        private static async Task<string> ExecuteJsonQuery(string query)
+        private async Task<string> ExecuteJsonQuery(string query)
         {
-
-            DBManager db = new DBManager(Environment.GetEnvironmentVariable("SQLCON1", EnvironmentVariableTarget.Process));
-            var results = await db.ExecuteQuery(query, async reader =>
+            var results = await dbManager.ExecuteQuery(query, async reader =>
             {
                 string jsonData = await reader.GetFieldValueAsync<string>(0); // Assuming JSON is in the first column
                 return new JsonResultData { JsonData = jsonData };
