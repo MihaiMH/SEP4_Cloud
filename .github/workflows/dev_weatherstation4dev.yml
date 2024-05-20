@@ -36,9 +36,6 @@ jobs:
     - name: Change directory to solution folder
       run: cd weatherstation
 
-    - name: Restore dependencies
-      run: dotnet restore weatherstation.sln
-
     - name: Build
       run: dotnet build weatherstation.sln --configuration Release --no-restore
 
