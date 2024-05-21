@@ -12,12 +12,12 @@ namespace weatherstation
     {
         static ConcurrentDictionary<Guid, TcpClient> clients = new ConcurrentDictionary<Guid, TcpClient>();
         static Timer updateWeatherTimer;
+        static Guid weatherUpdateClientId;
 
         static async Task Main(string[] args)
         {
             ScheduleUpdateWeatherMessage();
             await StartListeningForIoTData();
-            
 
             Console.ReadLine();
         }
@@ -38,7 +38,7 @@ namespace weatherstation
                     TcpClient client = await server.AcceptTcpClientAsync();
                     Guid clientId = Guid.NewGuid();
                     clients.TryAdd(clientId, client);
-                    Console.WriteLine("Connected!");
+                    Console.WriteLine($"Connected! Device ID: {clientId}");
 
                     _ = Task.Run(() => ProcessClientAsync(client, clientId));
                 }
@@ -87,7 +87,8 @@ namespace weatherstation
                                 if (msg.Equals("updateWeather"))
                                 {
                                     Console.WriteLine("Trigger IoT Device");
-                                    await SendMessageToAllClients("updateWeather");
+                                    weatherUpdateClientId = clientId;
+                                    await SendMessageToAllClients("updateWeather", clientId);
                                 }
                             }
 
@@ -102,7 +103,7 @@ namespace weatherstation
                                 string json = JsonConvert.SerializeObject(jsonData);
 
                                 Console.WriteLine(json);
-                                string res = await SendDataToAzureFunction(json);
+                                string res = await SendDataToAzureFunction(json, weatherUpdateClientId);
                             }
 
                             data.Clear();
@@ -129,7 +130,25 @@ namespace weatherstation
             }
         }
 
-        static async Task SendMessageToAllClients(string message)
+        static async Task SendDataToClient(string data, Guid clientId)
+        {
+            try
+            {
+                if (clients.TryGetValue(clientId, out TcpClient client) && client.Connected)
+                {
+                    NetworkStream stream = client.GetStream();
+                    byte[] messageBytes = Encoding.UTF8.GetBytes(data);
+                    await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
+                    Console.WriteLine("Data sent to client " + clientId + ": " + data);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Error sending data to client " + clientId + ": " + ex.Message);
+            }
+        }
+
+        static async Task SendMessageToAllClients(string message, Guid senderClientId)
         {
             byte[] messageBytes = Encoding.UTF8.GetBytes(message);
             foreach (var kvp in clients)
@@ -139,7 +158,7 @@ namespace weatherstation
 
                 try
                 {
-                    if (client.Connected)
+                    if (clientId != senderClientId && client.Connected)
                     {
                         NetworkStream stream = client.GetStream();
                         await stream.WriteAsync(messageBytes, 0, messageBytes.Length);
@@ -153,7 +172,7 @@ namespace weatherstation
             }
         }
 
-        static async Task<string> SendDataToAzureFunction(string data)
+        static async Task<string> SendDataToAzureFunction(string data, Guid clientId)
         {
             try
             {
@@ -167,6 +186,7 @@ namespace weatherstation
                 if (response.IsSuccessStatusCode)
                 {
                     Console.WriteLine("Data sent to Azure Function successfully.");
+                    await SendDataToClient(data, clientId);
                 }
                 else
                 {
@@ -190,7 +210,11 @@ namespace weatherstation
             Console.WriteLine($"DELAY NOW SET FOR {initialDelay} from {now.ToString()} to {nextRun.ToString()}");
             updateWeatherTimer = new Timer(async _ =>
             {
-                await SendMessageToAllClients("updateWeather");
+                foreach (var kvp in clients)
+                {
+                    await SendDataToClient("updateWeather", kvp.Key);
+                    break;
+                }
                 Console.WriteLine($"TRIGGER RUN NOW AT {DateTime.Now.ToString()}");
                 Console.WriteLine("Trigger IOT Device");
                 ScheduleUpdateWeatherMessage(); // Reschedule the timer for the next run
@@ -202,7 +226,7 @@ namespace weatherstation
             int minutes = now.Minute;
             int hours = now.Hour;
             DateTime nextRun;
-     
+
             if (minutes < 25)
             {
                 nextRun = new DateTime(now.Year, now.Month, now.Day, hours, 25, 0);
