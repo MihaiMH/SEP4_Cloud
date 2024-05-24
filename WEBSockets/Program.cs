@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 
@@ -79,7 +80,13 @@ namespace weatherstation
 
                         try
                         {
-                            var jsonData = Newtonsoft.Json.Linq.JObject.Parse(data.ToString());
+                            string message = data.ToString();
+                            if (IsAesEncrypted(message))
+                            {
+                                message = DecryptAes(message);
+                            }
+
+                            var jsonData = Newtonsoft.Json.Linq.JObject.Parse(message);
 
                             if (jsonData.TryGetValue("msg", out var msgToken))
                             {
@@ -129,6 +136,61 @@ namespace weatherstation
                 }
             }
         }
+
+        private static bool IsAesEncrypted(string message)
+        {
+            // Implement logic to check if the message is AES encrypted.
+            // This might involve checking for certain patterns or headers specific to your AES encryption implementation.
+            return message.StartsWith("ENCRYPTED:"); // Example check
+        }
+
+        private static string DecryptAes(string encryptedText)
+        {
+            string hexKey = "5468617473206D79204B756E67204675";
+            byte[] key = HexStringToByteArray(hexKey);
+
+            // Remove the "ENCRYPTED:" prefix if it exists
+            encryptedText = encryptedText.Substring(10);
+
+            using (Aes aesAlg = Aes.Create())
+            {
+                aesAlg.Key = key;
+
+                // Assuming the IV is prefixed to the encrypted text
+                byte[] fullCipher = Convert.FromBase64String(encryptedText);
+                byte[] iv = new byte[aesAlg.BlockSize / 8];
+                byte[] cipherText = new byte[fullCipher.Length - iv.Length];
+
+                Array.Copy(fullCipher, iv, iv.Length);
+                Array.Copy(fullCipher, iv.Length, cipherText, 0, cipherText.Length);
+
+                aesAlg.IV = iv;
+
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+
+                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                {
+                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    {
+                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        {
+                            return srDecrypt.ReadToEnd();
+                        }
+                    }
+                }
+            }
+        }
+
+        private static byte[] HexStringToByteArray(string hex)
+        {
+            int NumberChars = hex.Length;
+            byte[] bytes = new byte[NumberChars / 2];
+            for (int i = 0; i < NumberChars; i += 2)
+                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            return bytes;
+        }
+
+
 
         static async Task SendDataToClient(string data, Guid clientId)
         {
