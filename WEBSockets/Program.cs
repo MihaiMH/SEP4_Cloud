@@ -1,11 +1,9 @@
-﻿using MySqlX.XDevAPI;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using System.Collections.Concurrent;
 using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using System.Threading;
 
 namespace weatherstation
 {
@@ -109,7 +107,6 @@ namespace weatherstation
 
                                 string json = JsonConvert.SerializeObject(jsonData);
 
-                                Console.WriteLine(json);
                                 string res = await SendDataToAzureFunction(json, weatherUpdateClientId);
                             }
 
@@ -146,51 +143,57 @@ namespace weatherstation
 
         private static string DecryptAes(string encryptedText)
         {
-            string hexKey = "5468617473206D79204B756E67204675";
-            byte[] key = HexStringToByteArray(hexKey);
-
-            // Remove the "ENCRYPTED:" prefix if it exists
-            encryptedText = encryptedText.Substring(10);
-
-            using (Aes aesAlg = Aes.Create())
+            try
             {
-                aesAlg.Key = key;
+                string plainTextKey = "2b7e151628aed2a6abf7158809cf4f3c";
+                byte[] key = HexStringToByteArray(plainTextKey);
 
-                // Assuming the IV is prefixed to the encrypted text
-                byte[] fullCipher = Convert.FromBase64String(encryptedText);
-                byte[] iv = new byte[aesAlg.BlockSize / 8];
-                byte[] cipherText = new byte[fullCipher.Length - iv.Length];
-
-                Array.Copy(fullCipher, iv, iv.Length);
-                Array.Copy(fullCipher, iv.Length, cipherText, 0, cipherText.Length);
-
-                aesAlg.IV = iv;
-
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-
-                using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+                // Remove the "ENCRYPTED:" prefix if it exists
+                encryptedText = encryptedText.Substring(10);
+                using (Aes aesAlg = Aes.Create())
                 {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    aesAlg.Key = key;
+                    aesAlg.Mode = CipherMode.ECB;
+                    aesAlg.Padding = PaddingMode.None;
+
+                    // Assuming the IV is prefixed to the encrypted text
+                    byte[] fullCipher = HexStringToByteArray(encryptedText);
+                    
+
+                  
+
+                    ICryptoTransform decryptor = aesAlg.CreateDecryptor();
+
+                    using (MemoryStream msDecrypt = new MemoryStream(fullCipher))
                     {
-                        using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                        using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
                         {
-                            return srDecrypt.ReadToEnd();
+                            using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                            {
+                                return srDecrypt.ReadToEnd();
+                            }
                         }
                     }
                 }
+            } catch (Exception e) {
+                Console.WriteLine(e);
+                return null; 
             }
         }
 
         private static byte[] HexStringToByteArray(string hex)
         {
-            int NumberChars = hex.Length;
-            byte[] bytes = new byte[NumberChars / 2];
-            for (int i = 0; i < NumberChars; i += 2)
-                bytes[i / 2] = Convert.ToByte(hex.Substring(i, 2), 16);
+            hex = hex.Trim(); // Remove leading and trailing whitespace
+            int numberChars = hex.Length;
+            byte[] bytes = new byte[(numberChars + 1) / 2]; // Adjusting for odd-length hex strings
+            for (int i = 0; i < numberChars; i += 2)
+            {
+                int length = Math.Min(2, numberChars - i);
+                string substring = hex.Substring(i, length);
+                bytes[i / 2] = Convert.ToByte(substring, 16);
+            }
             return bytes;
         }
-
-
 
         static async Task SendDataToClient(string data, Guid clientId)
         {
