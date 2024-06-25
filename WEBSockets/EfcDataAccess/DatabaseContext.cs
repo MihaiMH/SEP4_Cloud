@@ -11,7 +11,7 @@ namespace WEBSockets.EfcDataAccess
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.UseMySQL("Server=sql.freedb.tech;Port=3306;Database=freedb_weatherstation;Uid=freedb_cristi;Pwd=wx*kQ6Ez7gK#6Jg");
+            optionsBuilder.UseMySQL("Server=sql.freedb.tech;Port=3306;Database=freedb_weatherstation;Uid=freedb_cristi;Pwd=vrS@Q8C95!QM!eG");
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
