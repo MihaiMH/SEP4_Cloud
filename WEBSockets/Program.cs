@@ -26,7 +26,7 @@ namespace weatherstation
             TcpListener server = null;
             try
             {
-                Int32 port = 2228;
+                Int32 port = 3389;
                 server = new TcpListener(IPAddress.Any, port);
 
                 server.Start();
